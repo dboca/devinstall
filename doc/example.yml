@@ -1,18 +1,18 @@
 base:
   rsync: /usr/bin/rsync
   ssh: /usr/bin/ssh
-  user: dboca
+  user: user
 local:
 # folder - source folder
 # temp - temporary folder
-  folder: ~/work/lbsm
+  folder: ~/work/project
   temp: ~/tmp
 build:
 # host - build machine
 # folder - rsync to?
 # target - the folder where packages will be generated (defaults to folder)
 # user - for ssh / rsync (defaults to base[user])
-  host: vm-dboca-4911.development.lan
+  host: vm.development.lan
   folder: rs
   target: rs
 install:
@@ -21,14 +21,14 @@ install:
 # environment - live/qa/dev/...
   environments:
     - dev:
-      host: iplbfe-dev01.server.lan
+      host: dev01.server.lan
       type: deb
 repodeploy:
 # for repository deployment
   - type: deb
-    user: teamupload                                          `
-    host: unitix-repo01.dlan.cinetic.de
-    folder: /srv/reprepro/incoming-balancer
+    user: upload                                          `
+    host: debian-repo01.server.lan
+    folder: /srv/repo
 packages:
   - ui-lbgenerate:
 # might contain all the sections above (local, build, install, repodeploy)
