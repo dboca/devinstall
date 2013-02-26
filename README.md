@@ -18,7 +18,17 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Example command:
+ -----------------------------------
+ devinstall --environment dev --package ui-lbgenerate --action install
+ -----------------------------------
+This will build and install the package on dev environment
+
+or
+ -----------------------------------
+ devinstall --environment dev-rh --package ui-lbgenerate --action repodeploy
+ -----------------------------------
+This will build and deploy the package for dev-rh environment
 
 ## Contributing
 
