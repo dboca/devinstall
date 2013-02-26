@@ -30,7 +30,7 @@ install:
       host: prod01.server.lan
       type: rpm
       # user defaults to install[:user]
-repodeploy:
+repos:
 # for repository deployment
    environments:
      dev:
