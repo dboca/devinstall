@@ -18,7 +18,7 @@ module Devinstall
     def new (package)
       # curently implemented only for .deb packages (for .rpm later :D)
       @package             =package.to_sym
-      @_package_version    =HAsh.new # versions for types:
+      @_package_version    =Hash.new # versions for types:
       @package_files       =Hash.new
       pname                ="#{package}_#{get_package_version :deb}"
       @package_files[:deb] ={deb: "#{pname}_all.deb",
@@ -54,15 +54,17 @@ module Devinstall
           puts("Undefined key 'build:#{k.to_s}:'")
           SystemExit(1)
         end
-        @build[k]=Settings.build[k]
+        build[k]=Settings.build[k]
       end
       ssh          =Settings.base[:ssh_command]
       build_command=Settings.packages[@package][type][:build_command]
       rsync        =Settings.base[:rsync]
+      local_folder =Settings.local[:folder]
+      local_temp   =Settings.local[:temp]
       system("#{rsync} -az #{local_folder}/ #{@build[:user]}@#{build[:host]}:#{build[:folder]}")
       system("#{ssh} #{build[:user]}@#{build[:host]} -c \"#{build_command}\"")
       @package_files[type].each do |p|
-        system("#{rsync} -az #{build[:user]}@#{build[:host]}/#{build[:target]}/#{p} #{Settings.local[:temp]}")
+        system("#{rsync} -az #{build[:user]}@#{build[:host]}/#{build[:target]}/#{p} #{local_temp}")
       end
     end
   end
