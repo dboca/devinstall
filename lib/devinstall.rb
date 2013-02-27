@@ -7,7 +7,7 @@ require 'devinstall/settings' ##  in near future we will have to abandon Setting
 module Devinstall
   class Pkg
 
-    def get_package_version(type)
+    def get_version(type)
       if type == :deb # curently implemented only for .deb packages
         deb_changelog          ="#{Settings.local[:folder]}/#{package}/debian/changelog"
         deb_package_version    =File.open(deb_changelog, 'r').gets.chomp.sub(/^.*\((.*)\).*$/, "\1")
@@ -27,7 +27,7 @@ module Devinstall
                              chg: "#{pname}_debian.changes"}
     end
 
-    def deploy_to_repo(environment)
+    def upload! (environment)
       scp  =Settings.base[:scp]
       repo =Hash.new
       type =Settings.repos[environment][:type]
@@ -42,7 +42,7 @@ module Devinstall
 
     end
 
-    def build_package(type)
+    def build! (type)
       unless Settings.packages[@package].has_key?(type)
         puts("Package '#{@package}' cannot be built for the required environment")
         puts("undefined build configuration for '#{type.to_s}'")
@@ -52,7 +52,7 @@ module Devinstall
       [:user, :host, :folder, :target].each do |k|
         unless Settings.build.has_key?(k)
           puts("Undefined key 'build:#{k.to_s}:'")
-          SystemExit(1)
+          exit!(1)
         end
         build[k]=Settings.build[k]
       end
@@ -67,5 +67,30 @@ module Devinstall
         system("#{rsync} -az #{build[:user]}@#{build[:host]}/#{build[:target]}/#{p} #{local_temp}")
       end
     end
+
+    def install! (environment)
+      sudo  =Settings.base[:sudo]
+      scp=Settings.base[:scp]
+      type  =Settings.install[environment][:type]
+      local_temp   =Settings.local[:temp]
+      build!(type)
+      install=Hash.new
+      [:user, :host, :folder].each do |k|
+        unless Settings.install[environment].has_key?(k)
+          puts "Undefined key 'install:#{environment.to_s}:#{k.to_s}'"
+          exit!(1)
+        end
+        install[k]=Settings[environment][k]
+      end
+      case type.to_sym
+        when :deb
+          system("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}/#{install[:folder]}")
+          system("#{sudo} \"cd #{install[:folder]} && dpkg -i #{@package_files[type][:deb]}")
+        else
+          puts "unknown package type '#{type.to_s}'"
+          exit!(1)
+      end
+    end
   end
 end
+
