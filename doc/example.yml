@@ -2,6 +2,7 @@ base:
   rsync: /usr/bin/rsync
   ssh: /usr/bin/ssh
   scp: /usr/bin/scp
+  sudo: /usr/bin/sudossh # must exist on the install host!!!
 local:
 # folder - source folder
 # temp - temporary folder
@@ -25,6 +26,7 @@ install:
     dev:
       host: dev01.server.lan
       type: deb
+      folder: ~ ## folder for scp
       user: dboca1
     prod:
       host: prod01.server.lan
