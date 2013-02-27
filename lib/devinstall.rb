@@ -46,7 +46,7 @@ module Devinstall
       unless Settings.packages[@package].has_key?(type)
         puts("Package '#{@package}' cannot be built for the required environment")
         puts("undefined build configuration for '#{type.to_s}'")
-        SystemExit(1)
+        exit!(1)
       end
       build =Hash.new
       [:user, :host, :folder, :target].each do |k|
