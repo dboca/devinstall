@@ -56,7 +56,7 @@ module Devinstall
         end
         build[k]=Settings.build[k]
       end
-      ssh          =Settings.base[:ssh_command]
+      ssh          =Settings.base[:ssh]
       build_command=Settings.packages[@package][type][:build_command]
       rsync        =Settings.base[:rsync]
       local_folder =Settings.local[:folder]
@@ -69,10 +69,10 @@ module Devinstall
     end
 
     def install! (environment)
-      sudo  =Settings.base[:sudo]
-      scp=Settings.base[:scp]
-      type  =Settings.install[environment][:type]
-      local_temp   =Settings.local[:temp]
+      sudo       =Settings.base[:sudo]
+      scp        =Settings.base[:scp]
+      type       =Settings.install[environment][:type]
+      local_temp =Settings.local[:temp]
       build!(type)
       install=Hash.new
       [:user, :host, :folder].each do |k|
