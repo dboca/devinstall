@@ -1,0 +1,36 @@
+require 'getoptlong'
+require 'devinstall'
+require 'devinstall/settings'
+
+opt =Getopt::Long.getopts(
+    ['--package', '-p', Getopt::REQUIRED],
+    ['--config',  '-c', Getopt::REQUIRED],
+    ['--type',    '-t', Getopt::REQUIRED],
+    ['--env',     '-e', Getopt::REQUIRED],
+    ['--build',   '-b', ],
+    ['--upload',  '-u', ],
+    ['--install', '-i', ],
+    ['--help',    '-h', ],
+)
+
+if opt['help']
+  p('Usage: pkg-install --package|-p <package> --config|-c <config file> --build|--upload|--install')
+  exit!(0)
+end
+
+Settings.load!(opt['config'])
+package=Pkg.new(opt['package'])
+
+if opt[:build]
+  package.build!(opt['type'].to_sym)
+end
+
+if opt[:install]
+  package.build!(opt['type'].to_sym)
+  package.install!(opt['env'].to_sym)
+end
+
+if opt[:upload]
+  package.build!(opt['type'].to_sym)
+  package.upload!(opt['env'].to_sym)
+end
