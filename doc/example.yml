@@ -2,7 +2,7 @@ base:
   rsync: /usr/bin/rsync
   ssh: /usr/bin/ssh
   scp: /usr/bin/scp
-  sudo: /usr/bin/sudossh # must exist on the install host!!!
+  sudo: /usr/bin/sshsudo
 local:
 # folder - source folder
 # temp - temporary folder

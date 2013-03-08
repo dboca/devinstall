@@ -22,9 +22,33 @@ module Settings
     target.merge! data, &merger
   end
 
-  def method_missing(name, *args, &block)
-    @_settings[name.to_sym] ||
-        fail(NoMethodError, "unknown configuration root #{name}", caller)
+  #def method_missing(name, *args, &block)
+  #  @_settings[name.to_sym] ||
+  #      fail(NoMethodError, "unknown configuration root #{name}", caller)
+  #end
+
+  def base
+    @_settings[:base]
+  end
+
+  def local
+    @_settings[:local]
+  end
+
+  def build
+    @_settings[:build]
+  end
+
+  def install
+    @_settings[:install]
+  end
+
+  def repos
+    @_settings[:repos]
+  end
+
+  def packages
+    @_settings[:packages]
   end
 
 end

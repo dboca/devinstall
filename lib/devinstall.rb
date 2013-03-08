@@ -20,7 +20,7 @@ module Devinstall
       @package             =package.to_sym
       @_package_version    =Hash.new # versions for types:
       @package_files       =Hash.new
-      pname                ="#{package}_#{get_package_version :deb}"
+      pname                ="#{package}_#{get_version :deb}"
       @package_files[:deb] ={deb: "#{pname}_all.deb",
                              tgz: "#{pname}.tar.gz",
                              dsc: "#{pname}.dsc",
@@ -35,7 +35,7 @@ module Devinstall
         fail("Unexistent key repos:#{environment}:#{k}") unless Settings.repos[environment].has_key?(k)
         repo[k]=Settings.repos[environment][k]
       end
-      build_pacage(type)
+      build(type)
       @package_files[type].each do |p|
         system("#{scp} #{Settings.local[:temp]}/#{p} #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}")
       end
@@ -61,7 +61,7 @@ module Devinstall
       rsync        =Settings.base[:rsync]
       local_folder =Settings.local[:folder]
       local_temp   =Settings.local[:temp]
-      system("#{rsync} -az #{local_folder}/ #{@build[:user]}@#{build[:host]}:#{build[:folder]}")
+      system("#{rsync} -az #{local_folder}/ #{build[:user]}@#{build[:host]}:#{build[:folder]}")
       system("#{ssh} #{build[:user]}@#{build[:host]} -c \"#{build_command}\"")
       @package_files[type].each do |p|
         system("#{rsync} -az #{build[:user]}@#{build[:host]}/#{build[:target]}/#{p} #{local_temp}")
@@ -85,7 +85,7 @@ module Devinstall
       case type.to_sym
         when :deb
           system("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}/#{install[:folder]}")
-          system("#{sudo} \"cd #{install[:folder]} && dpkg -i #{@package_files[type][:deb]}")
+          system("#{sudo} #{build![:user]}@#{build[:host]} \"dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
         else
           puts "unknown package type '#{type.to_s}'"
           exit!(1)
