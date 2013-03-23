@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'getoptlong'
+require 'getopt/long'
 require 'devinstall'
 require 'devinstall/settings'
 
