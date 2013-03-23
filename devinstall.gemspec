@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['dboca@mail.com']
   spec.description   = %q{remote builder and installer}
   spec.summary       = %q{Copy the source files to a build host, build the packages and install builded packages}
-  spec.homepage      = 'https://github.com/dboca/devinstall'
+  spec.homepage      = 'http://github.com/dboca/devinstall'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files`.split($/)
