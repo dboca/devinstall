@@ -5,6 +5,7 @@ require 'devinstall'
 require 'devinstall/settings'
 
 opt =Getopt::Long.getopts(
+    ['--version', '-v',],
     ['--package', '-p', Getopt::REQUIRED],
     ['--config',  '-c', Getopt::REQUIRED],
     ['--type',    '-t', Getopt::REQUIRED],
@@ -15,11 +16,20 @@ opt =Getopt::Long.getopts(
     ['--help',    '-h', ],
 )
 
+if opt[:version]
+  p "devinstall version #{Devinstall::VERSION}"
+  p "pkg-tool version   #{Devinstall::VERSION}"
+  exit(0)
+end
 if opt['help']
-  p('Usage: pkg-install --package|-p <package> --config|-c <config file> --build|--upload|--install')
+  p('Usage: pkg-install --config|-c <file> --package|-p <package> --type|-t <package_type> --env|-e <environment> --build|--upload|--install')
   exit!(0)
 end
-
+unless opt[:package] && opt[:config] && opt[:type] && opt[:env] && (opt[:build] || opt[:upload] || opt[:install])
+  p 'You must speciffy --config file, --package, --type and --environment '
+  p 'and one of the actions (--build, --install, --upload)'
+  exit!(0)
+end
 Settings.load!(opt['config'])
 package=Pkg.new(opt['package'])
 
