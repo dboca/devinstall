@@ -42,6 +42,7 @@ module Devinstall
 
     end
 
+    # @param [Symbol] type
     def build! (type)
       unless Settings.packages[@package].has_key?(type)
         puts("Package '#{@package}' cannot be built for the required environment")
@@ -61,6 +62,11 @@ module Devinstall
       rsync        =Settings.base[:rsync]
       local_folder =Settings.local[:folder]
       local_temp   =Settings.local[:temp]
+      build_command.sub('%f', Settings.build[:folder]).
+          sub('%t', Settings.build[:target]).
+          sub('%p', @package.to_s).
+          sub('%T', type.to_s)
+
       system("#{rsync} -az #{local_folder}/ #{build[:user]}@#{build[:host]}:#{build[:folder]}")
       system("#{ssh} #{build[:user]}@#{build[:host]} -c \"#{build_command}\"")
       @package_files[type].each do |p|
