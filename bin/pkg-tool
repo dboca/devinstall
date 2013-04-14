@@ -5,21 +5,25 @@ require 'devinstall'
 require 'devinstall/settings'
 
 begin
-opt =Getopt::Long.getopts(
-    ['--version', '-v',],
-    ['--package', '-p', Getopt::REQUIRED],
-    ['--config',  '-c', Getopt::REQUIRED],
-    ['--type',    '-t', Getopt::REQUIRED],
-    ['--env',     '-e', Getopt::REQUIRED],
-    ['--build',   '-b', ],
-    ['--upload',  '-u', ],
-    ['--install', '-i', ],
-    ['--help',    '-h', ],
-)
+  opt =Getopt::Long.getopts(
+      ['--version', '-v',],
+      ['--package', '-p', Getopt::REQUIRED],
+      ['--config', '-c', Getopt::REQUIRED],
+      ['--type', '-t', Getopt::REQUIRED],
+      ['--env', '-e', Getopt::REQUIRED],
+      ['--build', '-b',],
+      ['--upload', '-u',],
+      ['--install', '-i',],
+      ['--help', '-h',],
+  )
 rescue
-  puts "Invalid option in command line"
-  puts 'Usage: pkg-install --config|-c <file> --package|-p <package> --type|-t <package_type> --env|-e <environment> --build|--upload|--install'
+  puts 'Invalid option in command line'
+  help!
   exit!(1)
+end
+
+def help!
+  puts 'Usage: pkg-install --config|-c <file> --package|-p <package> --type|-t <package_type> --env|-e <environment> --build|--upload|--install'
 end
 
 if opt['version']
@@ -27,27 +31,25 @@ if opt['version']
   puts "pkg-tool version   #{Devinstall::VERSION}"
   exit(0)
 end
+
 if opt['help']
-  puts 'Usage: pkg-install --config|-c <file> --package|-p <package> --type|-t <package_type> --env|-e <environment> --build|--upload|--install'
+  help!
   exit!(0)
 end
-if !( opt['package'] && opt['config'] && opt['type'] && opt['env'] && (opt['build'] || opt['upload'] || opt['install']))
+
+unless opt['package'] && opt['config'] && opt['type'] && opt['env'] && (opt['build'] || opt['upload'] || opt['install'])
   puts 'You must speciffy --config file, --package, --type and --env and one of the actions (--build, --install, --upload)'
   exit!(0)
 end
 Settings.load!(opt['config'])
 package=Pkg.new(opt['package'])
 
-if opt[:build]
+if opt['build']
   package.build!(opt['type'].to_sym)
-end
-
-if opt[:install]
+elsif opt['install']
   package.build!(opt['type'].to_sym)
   package.install!(opt['env'].to_sym)
-end
-
-if opt[:upload]
+elsif opt['upload']
   package.build!(opt['type'].to_sym)
   package.upload!(opt['env'].to_sym)
 end

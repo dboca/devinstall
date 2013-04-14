@@ -13,10 +13,12 @@ build:
 # folder - rsync to?
 # target - the folder where packages will be generated (defaults to folder)
 # user - for ssh / rsync
+# arch is the architecture for the generated package (like amd64 or i686)
   user: dboca
   host: vm.development.lan
   folder: rs
   target: rs
+  arch: all
 install:
 # host - dev/prod deploy and install host
 # user - for scp / ssh / rsync  (defaults to base[user])
@@ -28,12 +30,15 @@ install:
       type: deb
       folder: ~ ## folder for scp
       user: dboca1
+      arch: all
     prod:
       host: prod01.server.lan
       type: rpm
+      arch: all
       # user defaults to install[:user]
 repos:
 # for repository deployment
+# in a repository should be all packages for all architectures so we don't have an 'arch:' field
    environments:
      dev:
        type: deb
