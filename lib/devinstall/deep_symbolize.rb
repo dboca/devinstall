@@ -19,7 +19,7 @@ module DeepSymbolizable
 
   def deep_symbolize(&block)
     method = self.class.to_s.downcase.to_sym
-    syms   = DeepSymbolizable::Symbolizers
+    syms = DeepSymbolizable::Symbolizers
     syms.respond_to?(method) ? syms.send(method, self, &block) : self
   end
 

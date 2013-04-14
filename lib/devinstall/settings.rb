@@ -16,6 +16,7 @@ module Settings
     newsets = newsets[options[:env].to_sym] if options[:env] && newsets[options[:env].to_sym]
     deep_merge!(@_settings, newsets)
   end
+
   def deep_merge!(target, data)
     merger = proc { |_, v1, v2|
       Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2 }
