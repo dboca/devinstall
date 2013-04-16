@@ -29,7 +29,7 @@ module Devinstall
                              chg: "#{pname}_debian.changes"}
     end
 
-    def upload! (environment)
+    def upload (environment)
       scp =Settings.base[:scp]
       repo =Hash.new
       type =Settings.repos[environment][:type]
@@ -44,7 +44,7 @@ module Devinstall
     end
 
     # @param [Symbol] type
-    def build! (type)
+    def build (type)
       unless Settings.packages[@package].has_key?(type)
         puts("Package '#{@package}' cannot be built for the required environment")
         puts("undefined build configuration for '#{type.to_s}'")
@@ -76,24 +76,24 @@ module Devinstall
       end
     end
 
-    def install! (environment)
+    def install (environment)
       sudo =Settings.base[:sudo]
       scp =Settings.base[:scp]
-      type =Settings.install[environment][:type]
+      type =Settings.install[:environment][:type]
       local_temp =Settings.local[:temp]
-      build!(type)
+      build(type)
       install=Hash.new
       [:user, :host, :folder].each do |k|
-        unless Settings.install[environment].has_key?(k)
+        unless Settings.install[:environment].has_key?(k)
           puts "Undefined key 'install:#{environment.to_s}:#{k.to_s}'"
           exit!(1)
         end
-        install[k]=Settings[environment][k]
+        install[k]=Settings.install[environment][k]
       end
       case type.to_sym
         when :deb
           system("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}/#{install[:folder]}")
-          system("#{sudo} #{build![:user]}@#{build[:host]} \"dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
+          system("#{sudo} #{Settings.build[:user]}@#{Settings.build[:host]} \"dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
         else
           puts "unknown package type '#{type.to_s}'"
           exit!(1)

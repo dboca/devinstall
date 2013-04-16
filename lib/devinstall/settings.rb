@@ -23,11 +23,6 @@ module Settings
     target.merge! data, &merger
   end
 
-  #def method_missing(name, *args, &block)
-  #  @_settings[name.to_sym] ||
-  #      fail(NoMethodError, "unknown configuration root #{name}", caller)
-  #end
-
   def base
     @_settings[:base]
   end

@@ -15,9 +15,9 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="bundler (v1.3.4, RVM: ruby-2.0.0-p0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="getopt (v1.4.1, RVM: ruby-2.0.0-p0) [gem]" level="application" />
-    <orderEntry type="library" scope="PROVIDED" name="rake (v10.0.3, RVM: ruby-2.0.0-p0) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="bundler (v1.3.0.pre.8, ruby-1.9.3-p392) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="getopt (v1.4.1, ruby-1.9.3-p392) [gem]" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="rake (v10.0.3, ruby-1.9.3-p392) [gem]" level="application" />
   </component>
 </module>
 
