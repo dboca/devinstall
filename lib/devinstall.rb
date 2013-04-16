@@ -1,22 +1,27 @@
 require 'devinstall/version'
+require 'devinstall/deep_symbolize'
 require 'devinstall/settings' ##  in near future we will have to abandon Settings
                               # for something more complex because we will need to
                               # define things (repos/install-hosts) for different
                               # environments (dev/qa/prelive/live/prod/backup and so)
 
+
 module Devinstall
+
+
   class Pkg
 
     # @param [Symbol] type
     def get_version(type)
       if type == :deb
-        deb_changelog = "#{Settings.local[:folder]}/debian/changelog" # This is the folder that should be checked
-        deb_package_version =File.open(deb_changelog, 'r').gets.chomp.sub(/^.*\((.*)\).*$/, "\1")
+        deb_changelog = File.expand_path "#{Settings.local[:folder]}/#{@package}/debian/changelog" # This is the folder that should be checked
+        deb_package_version =File.open(deb_changelog, 'r').gets.chomp.sub(/^.*\((.*)\).*$/, '\1')
         @_package_version[:deb]=deb_package_version
       end
     end
 
-    def new (package)
+    # @param [String] package
+    def initialize (package)
       # curently implemented only for .deb packages (for .rpm later :D)
       @package =package.to_sym
       @_package_version =Hash.new # versions for types:
@@ -26,7 +31,7 @@ module Devinstall
       @package_files[:deb] ={deb: "#{pname}_#{arch}.deb",
                              tgz: "#{pname}.tar.gz",
                              dsc: "#{pname}.dsc",
-                             chg: "#{pname}_debian.changes"}
+                             chg: "#{pname}_amd64.changes"}
     end
 
     def upload (environment)
@@ -45,6 +50,7 @@ module Devinstall
 
     # @param [Symbol] type
     def build (type)
+      puts "Building package #{@package} type #{type.to_s}"
       unless Settings.packages[@package].has_key?(type)
         puts("Package '#{@package}' cannot be built for the required environment")
         puts("undefined build configuration for '#{type.to_s}'")
@@ -62,24 +68,26 @@ module Devinstall
       ssh =Settings.base[:ssh]
       build_command=Settings.packages[@package][type][:build_command]
       rsync =Settings.base[:rsync]
-      local_folder =Settings.local[:folder]
-      local_temp =Settings.local[:temp]
-      build_command.sub('%f', Settings.build[:folder]).
-          sub('%t', Settings.build[:target]).
-          sub('%p', @package.to_s).
-          sub('%T', type.to_s)
+      local_folder =File.expand_path Settings.local[:folder]
+      local_temp =File.expand_path Settings.local[:temp]
+
+      build_command = build_command.gsub('%f', build[:folder]).
+          gsub('%t', Settings.build[:target]).
+          gsub('%p', @package.to_s).
+          gsub('%T', type.to_s)
 
       system("#{rsync} -az #{local_folder}/ #{build[:user]}@#{build[:host]}:#{build[:folder]}")
-      system("#{ssh} #{build[:user]}@#{build[:host]} -c \"#{build_command}\"")
-      @package_files[type].each do |p|
-        system("#{rsync} -az #{build[:user]}@#{build[:host]}/#{build[:target]}/#{p} #{local_temp}")
+      system("#{ssh} #{build[:user]}@#{build[:host]} \"#{build_command}\"")
+      @package_files[type].each do |p,t|
+        puts "Receiving target #{p.to_s} for #{t.to_s}"
+        system("#{rsync} -az #{build[:user]}@#{build[:host]}:#{build[:target]}/#{t} #{local_temp}")
       end
     end
 
     def install (environment)
       sudo =Settings.base[:sudo]
       scp =Settings.base[:scp]
-      type =Settings.install[:environment][:type]
+      type =Settings.install[environment][:type]
       local_temp =Settings.local[:temp]
       build(type)
       install=Hash.new

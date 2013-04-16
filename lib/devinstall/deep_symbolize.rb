@@ -11,11 +11,8 @@
 # 1) class Hash; include DeepSymbolizable; end
 # 2) myhash.extend DeepSymbolizable
 
-module DeepSymbolizable
 
-  class Hash
-    include DeepSymbolizable
-  end
+module DeepSymbolizable
 
   def deep_symbolize(&block)
     method = self.class.to_s.downcase.to_sym

@@ -1,7 +1,12 @@
 require 'yaml'
-require 'devinstall/deep_symbolize'
+
+class Hash
+  include DeepSymbolizable
+end
+
 
 module Settings
+
   extend self
 
   @_settings = {}

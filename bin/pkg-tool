@@ -41,15 +41,16 @@ unless opt['package'] && opt['config'] && opt['type'] && opt['env'] && (opt['bui
   puts 'You must speciffy --config file, --package, --type and --env and one of the actions (--build, --install, --upload)'
   exit!(0)
 end
+puts "Working on #{opt['package']} for environment #{opt['env']}"
 Settings.load!(opt['config'])
-package=Pkg.new(opt['package'])
+package=Devinstall::Pkg.new(opt['package'])
 
 if opt['build']
-  package.build!(opt['type'].to_sym)
+  package.build(opt['type'].to_sym)
 elsif opt['install']
-  package.build!(opt['type'].to_sym)
-  package.install!(opt['env'].to_sym)
+  package.build(opt['type'].to_sym)
+  package.install(opt['env'].to_sym)
 elsif opt['upload']
-  package.build!(opt['type'].to_sym)
-  package.upload!(opt['env'].to_sym)
+  package.build(opt['type'].to_sym)
+  package.upload(opt['env'].to_sym)
 end
