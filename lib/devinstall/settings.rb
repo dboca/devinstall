@@ -4,7 +4,6 @@ class Hash
   include DeepSymbolizable
 end
 
-
 module Settings
 
   extend self
@@ -26,6 +25,10 @@ module Settings
     merger = proc { |_, v1, v2|
       Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2 }
     target.merge! data, &merger
+  end
+
+  def defaults
+    @_settings[:defaults]
   end
 
   def base

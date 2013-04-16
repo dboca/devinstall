@@ -3,6 +3,7 @@
 require 'getopt/long'
 require 'devinstall'
 require 'devinstall/settings'
+require 'pp'
 
 begin
   opt =Getopt::Long.getopts(
@@ -36,19 +37,28 @@ if opt['help']
   help!
   exit!(0)
 end
-
+unless opt['config']
+  puts 'You must specify a config file'
+  exit! 1
+end
+Settings.load!(opt['config'])
+[:package, :type, :env].each do |a|
+  if Settings.defaults[a] and not opt[a.to_s]
+    opt[a.to_s]=Settings.defaults[a]
+  end
+end
+puts "Working on #{opt['package']} for environment #{opt['env']}"
 unless opt['package'] && opt['config'] && opt['type'] && opt['env'] && (opt['build'] || opt['upload'] || opt['install'])
   puts 'You must speciffy --config file, --package, --type and --env and one of the actions (--build, --install, --upload)'
   exit!(0)
 end
-puts "Working on #{opt['package']} for environment #{opt['env']}"
-Settings.load!(opt['config'])
+
 package=Devinstall::Pkg.new(opt['package'])
 
 if opt['build']
   package.build(opt['type'].to_sym)
 elsif opt['install']
-  #package.build(opt['type'].to_sym)
+  package.build(opt['type'].to_sym)
   package.install(opt['env'].to_sym)
 elsif opt['upload']
   package.build(opt['type'].to_sym)

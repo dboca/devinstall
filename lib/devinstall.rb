@@ -34,16 +34,20 @@ module Devinstall
                              chg: "#{pname}_amd64.changes"}
     end
 
-    def upload (environment)
+    def upload (env)
+      unless Settings.repos[:environments][env]
+        puts "Undefined environment '#{env}'"
+        exit! 1
+      end
       scp =Settings.base[:scp]
       repo =Hash.new
-      type =Settings.repos[environment][:type]
+      type =Settings.repos[:environments][env][:type].to_sym
       [:user, :host, :folder].each do |k|
-        fail("Unexistent key repos:#{environment}:#{k}") unless Settings.repos[environment].has_key?(k)
-        repo[k]=Settings.repos[environment][k]
+        fail("Unexistent key repos:#{env}:#{k}") unless Settings.repos[:environments][env].has_key?(k)
+        repo[k]=Settings.repos[:environments][env][k]
       end
-      build(type)
-      @package_files[type].each do |p|
+      @package_files[type].each do |t,p|
+        puts "Uploading target #{t}(#{p}) to #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}"
         system("#{scp} #{Settings.local[:temp]}/#{p} #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}")
       end
     end
@@ -52,9 +56,9 @@ module Devinstall
     def build (type)
       puts "Building package #{@package} type #{type.to_s}"
       unless Settings.packages[@package].has_key?(type)
-        puts("Package '#{@package}' cannot be built for the required environment")
+        puts("Package '#{@package}' cannot be built for the required env")
         puts("undefined build configuration for '#{type.to_s}'")
-        exit!(1)
+        exit! 1
       end
       build =Hash.new
       [:user, :host, :folder, :target].each do |k|
@@ -79,29 +83,33 @@ module Devinstall
       system("#{rsync} -az #{local_folder}/ #{build[:user]}@#{build[:host]}:#{build[:folder]}")
       system("#{ssh} #{build[:user]}@#{build[:host]} \"#{build_command}\"")
       @package_files[type].each do |p,t|
-        puts "Receiving target #{p.to_s} for #{t.to_s}"
+        puts "Receiving target #{p.to_s}(#{t.to_s}) from #{build[:user]}@#{build[:host]}:#{build[:target]}"
         system("#{rsync} -az #{build[:user]}@#{build[:host]}:#{build[:target]}/#{t} #{local_temp}")
       end
     end
 
-    def install (environment)
-      puts "Installing #{@package} in #{environment} environment."
+    def install (env)
+      unless Settings.repos[:environments][env]
+        puts "Undefined environment '#{env}'"
+        exit! 1
+      end
+      puts "Installing #{@package} in #{env} environment."
       sudo =Settings.base[:sudo]
       scp =Settings.base[:scp]
-      type=Settings.install[:environments][environment][:type]
+      type=Settings.install[:environments][env][:type].to_sym
       local_temp =Settings.local[:temp]
       install=Hash.new
       [:user, :host, :folder].each do |k|
-        unless Settings.install[:environments][environment].has_key?(k)
-          puts "Undefined key 'install:#{environment.to_s}:#{k.to_s}'"
+        unless Settings.install[:environments][env].has_key? k
+          puts "Undefined key 'install:environments:#{env.to_s}:#{k.to_s}'"
           exit!(1)
         end
-        install[k]=Settings.install[:environments][environment][k]
+        install[k]=Settings.install[:environments][env][k]
       end
-      case type.to_sym
+      case type
         when :deb
           system("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}/#{install[:folder]}")
-          system("#{sudo} #{Settings.build[:user]}@#{Settings.build[:host]} \"dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
+          system("#{sudo} #{Settings.build[:user]}@#{Settings.build[:host]} \"dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}\"")
         else
           puts "unknown package type '#{type.to_s}'"
           exit!(1)
