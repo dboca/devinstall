@@ -48,7 +48,7 @@ package=Devinstall::Pkg.new(opt['package'])
 if opt['build']
   package.build(opt['type'].to_sym)
 elsif opt['install']
-  package.build(opt['type'].to_sym)
+  #package.build(opt['type'].to_sym)
   package.install(opt['env'].to_sym)
 elsif opt['upload']
   package.build(opt['type'].to_sym)

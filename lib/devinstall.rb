@@ -4,7 +4,7 @@ require 'devinstall/settings' ##  in near future we will have to abandon Setting
                               # for something more complex because we will need to
                               # define things (repos/install-hosts) for different
                               # environments (dev/qa/prelive/live/prod/backup and so)
-
+require 'pp'
 
 module Devinstall
 
@@ -85,18 +85,18 @@ module Devinstall
     end
 
     def install (environment)
+      puts "Installing #{@package} in #{environment} environment."
       sudo =Settings.base[:sudo]
       scp =Settings.base[:scp]
-      type =Settings.install[environment][:type]
+      type=Settings.install[:environments][environment][:type]
       local_temp =Settings.local[:temp]
-      build(type)
       install=Hash.new
       [:user, :host, :folder].each do |k|
-        unless Settings.install[:environment].has_key?(k)
+        unless Settings.install[:environments][environment].has_key?(k)
           puts "Undefined key 'install:#{environment.to_s}:#{k.to_s}'"
           exit!(1)
         end
-        install[k]=Settings.install[environment][k]
+        install[k]=Settings.install[:environments][environment][k]
       end
       case type.to_sym
         when :deb
