@@ -1,3 +1,3 @@
 module Devinstall
-  VERSION = "0.2.0" # first test
+  VERSION = "0.2.1" # first test
 end

@@ -35,7 +35,7 @@ module Settings
   def tests
     @_settings[:tests]
   end
-  
+
   def base
     @_settings[:base]
   end

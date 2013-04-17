@@ -8,7 +8,6 @@ require 'pp'
 
 module Devinstall
 
-
   class Pkg
 
     # @param [Symbol] type
@@ -76,9 +75,9 @@ module Devinstall
           gsub('%p', @package.to_s).
           gsub('%T', type.to_s)
 
-      upload_sources("#{local_folder}/","#{build[:user]}@#{build[:host]}:#{build[:folder]}")
+      upload_sources("#{local_folder}/", "#{build[:user]}@#{build[:host]}:#{build[:folder]}")
       system("#{ssh} #{build[:user]}@#{build[:host]} \"#{build_command}\"")
-      @package_files[type].each do |p,t|
+      @package_files[type].each do |p, t|
         puts "Receiving target #{p.to_s} for #{t.to_s}"
         system("#{rsync} -az #{build[:user]}@#{build[:host]}:#{build[:target]}/#{t} #{local_temp}")
       end
@@ -102,10 +101,10 @@ module Devinstall
 
       local_folder =File.expand_path Settings.local[:folder] #take the sources from the local folder
 
-      upload_sources("#{local_folder}/","#{test[:user]}@#{test[:machine]}:#{test[:folder]}") # upload them to the test machine
+      upload_sources("#{local_folder}/", "#{test[:user]}@#{test[:machine]}:#{test[:folder]}") # upload them to the test machine
 
       puts "Running all tests for the #{environment} environment"
-      puts "this will take some time"
+      puts "This will take some time"
       ret=system("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
       if ret
         puts "Errors during test. Aborting current procedure"
@@ -113,14 +112,9 @@ module Devinstall
       end
     rescue Exception => ee
       puts "Unknown exception during parsing config file"
-      puts "Aborting"
-      pp ee
-      puts
-      pp ee.backtrace
+      puts "Aborting (#{ee})"
       exit! 1
     end
-
-
 
     def install (environment)
       puts "Installing #{@package} in #{environment} environment."
@@ -138,14 +132,15 @@ module Devinstall
       end
       case type
         when :deb
-          system("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}/#{install[:folder]}")
-          system("#{sudo} #{Settings.build[:user]}@#{Settings.build[:host]} \"dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
+          system("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}:#{install[:folder]}")
+          system("#{sudo} #{Settings.build[:user]}@#{Settings.build[:host]} /usr/bin/dpkg -i '#{install[:folder]}/#{@package_files[type][:deb]}'")
         else
           puts "unknown package type '#{type.to_s}'"
           exit! 1
       end
     end
-    def upload_sources (source,dest)
+
+    def upload_sources (source, dest)
       rsync =Settings.base[:rsync]
       system("#{rsync} -az #{source} #{dest}")
     end
