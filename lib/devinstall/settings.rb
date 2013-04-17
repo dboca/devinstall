@@ -28,6 +28,14 @@ module Settings
     target.merge! data, &merger
   end
 
+  def defaults
+    @_settings[:defaults]
+  end
+
+  def tests
+    @_settings[:tests]
+  end
+  
   def base
     @_settings[:base]
   end
