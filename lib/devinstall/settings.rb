@@ -4,6 +4,7 @@ class Hash
   include DeepSymbolizable
 end
 
+
 module Settings
 
   extend self
@@ -31,6 +32,10 @@ module Settings
     @_settings[:defaults]
   end
 
+  def tests
+    @_settings[:tests]
+  end
+  
   def base
     @_settings[:base]
   end

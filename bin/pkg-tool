@@ -3,7 +3,6 @@
 require 'getopt/long'
 require 'devinstall'
 require 'devinstall/settings'
-require 'pp'
 
 begin
   opt =Getopt::Long.getopts(
@@ -15,12 +14,13 @@ begin
       ['--build', '-b',],
       ['--upload', '-u',],
       ['--install', '-i',],
+      ['--test', '-t,'],
       ['--help', '-h',],
   )
 rescue
   puts 'Invalid option in command line'
   help!
-  exit!(1)
+  exit! 1
 end
 
 def help!
@@ -38,21 +38,21 @@ if opt['help']
   exit!(0)
 end
 unless opt['config']
-  puts 'You must specify a config file'
-  exit! 1
+  puts 'You must specify the config file'
+  exit! 1 # Exit 
 end
-Settings.load!(opt['config'])
-[:package, :type, :env].each do |a|
-  if Settings.defaults[a] and not opt[a.to_s]
-    opt[a.to_s]=Settings.defaults[a]
+Settings.load! opt['config']
+
+['package', 'env', 'type'].each do |o|
+  if Settings.defaults[o.to_sym]
+    opt[o]=Settings.defaults[o.to_sym]
   end
 end
-puts "Working on #{opt['package']} for environment #{opt['env']}"
-unless opt['package'] && opt['config'] && opt['type'] && opt['env'] && (opt['build'] || opt['upload'] || opt['install'])
-  puts 'You must speciffy --config file, --package, --type and --env and one of the actions (--build, --install, --upload)'
-  exit!(0)
-end
 
+unless opt['package'] && opt['config'] && opt['type'] && opt['env'] && (opt['build'] || opt['upload'] || opt['install'] || opt['test'])
+  puts 'You must speciffy --config file, --package, --type and --env and one of the actions (--build, --install, --upload or --test)'
+  exit! 1
+end
 package=Devinstall::Pkg.new(opt['package'])
 
 if opt['build']
@@ -62,5 +62,8 @@ elsif opt['install']
   package.install(opt['env'].to_sym)
 elsif opt['upload']
   package.build(opt['type'].to_sym)
+  package.run_tests(opt['env'].to_sym)
   package.upload(opt['env'].to_sym)
+elsif opt['test']
+  package.run_tests(opt['env'].to_sym)
 end
