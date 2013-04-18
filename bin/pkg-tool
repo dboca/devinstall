@@ -5,7 +5,20 @@ require 'devinstall/cli'
 command = ARGV.shift
 package = ''
 
-unless %w"build install upload help version test".include? command
+if %w"version --version -v".include? command 
+  puts "devinstall version #{Devinstall::VERSION}"
+  puts "pkg-tool version   #{Devinstall::VERSION}"
+  exit! 0
+end
+
+if %w"help --help -h".include? command
+  puts 'Usage:'
+  puts 'pkg-install command --config|-c <file> --package|-p <package> --type|-t <package_type> --env|-e <environment>'
+  puts 'where command is one of the: build, install, upload, help, version'
+  exit! 0
+end
+
+unless %w"build install upload test".include? command
   puts "Unknown command #{command}"
   exit! 1
 end
@@ -13,9 +26,11 @@ end
 ## the next should be the package
 # so if ARGV[0] don't start with --
 # we name it package
-if ARGV[0][0..1] != '--'
+if ARGV[0] and ARGV[0][0..1] != '--'
   package = ARGV.shift
 end
+
+
 
 cli=Devinstall::Cli.new(package)
 cli.send(command.to_sym)

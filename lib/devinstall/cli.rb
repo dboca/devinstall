@@ -55,19 +55,6 @@ module Devinstall
       @package=Devinstall::Pkg.new(@opt['package'])
     end
 
-    def version
-      puts "devinstall version #{Devinstall::VERSION}"
-      puts "pkg-tool version   #{Devinstall::VERSION}"
-      exit! 0
-    end
-
-    def help
-      puts 'Usage:'
-      puts 'pkg-install command --config|-c <file> --package|-p <package> --type|-t <package_type> --env|-e <environment>'
-      puts 'where command is one of the: build, install, upload, help, version'
-      exit! 0
-    end
-
     def build
       @package.build(@opt['type'].to_sym)
     end
