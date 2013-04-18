@@ -1,69 +1,12 @@
 #!/usr/bin/env ruby
 
-require 'getopt/long'
-require 'devinstall'
-require 'devinstall/settings'
+require 'devinstall/cli'
 
-begin
-  opt =Getopt::Long.getopts(
-      ['--version', '-v',],
-      ['--package', '-p', Getopt::REQUIRED],
-      ['--config', '-c', Getopt::REQUIRED],
-      ['--type', '-t', Getopt::REQUIRED],
-      ['--env', '-e', Getopt::REQUIRED],
-      ['--build', '-b',],
-      ['--upload', '-u',],
-      ['--install', '-i',],
-      ['--test', '-t,'],
-      ['--help', '-h',],
-  )
-rescue
-  puts 'Invalid option in command line'
-  help!
-  exit! 1
-end
+command = ARGV.shift
 
-def help!
-  puts 'Usage: pkg-install --config|-c <file> --package|-p <package> --type|-t <package_type> --env|-e <environment> --build|--upload|--install'
+unless %w"build install upload help version test".include? command
+  puts "Unknown command #{command}"
+  exit 1
 end
-
-if opt['version']
-  puts "devinstall version #{Devinstall::VERSION}"
-  puts "pkg-tool version   #{Devinstall::VERSION}"
-  exit(0)
-end
-
-if opt['help']
-  help!
-  exit!(0)
-end
-unless opt['config']
-  puts 'You must specify the config file'
-  exit! 1 # Exit 
-end
-Settings.load! opt['config']
-
-['package', 'env', 'type'].each do |o|
-  if Settings.defaults[o.to_sym]
-    opt[o]=Settings.defaults[o.to_sym]
-  end
-end
-
-unless opt['package'] && opt['config'] && opt['type'] && opt['env'] && (opt['build'] || opt['upload'] || opt['install'] || opt['test'])
-  puts 'You must speciffy --config file, --package, --type and --env and one of the actions (--build, --install, --upload or --test)'
-  exit! 1
-end
-package=Devinstall::Pkg.new(opt['package'])
-
-if opt['build']
-  package.build(opt['type'].to_sym)
-elsif opt['install']
-  package.build(opt['type'].to_sym)
-  package.install(opt['env'].to_sym)
-elsif opt['upload']
-  package.build(opt['type'].to_sym)
-  package.run_tests(opt['env'].to_sym)
-  package.upload(opt['env'].to_sym)
-elsif opt['test']
-  package.run_tests(opt['env'].to_sym)
-end
+cli=Cli.new
+cli.send(command.to_sym)

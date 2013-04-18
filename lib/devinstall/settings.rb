@@ -23,8 +23,9 @@ module Settings
   end
 
   def deep_merge!(target, data)
-    merger = proc { |_, v1, v2|
-      Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2 }
+    merger = proc do |_, v1, v2|
+      Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2
+    end
     target.merge! data, &merger
   end
 

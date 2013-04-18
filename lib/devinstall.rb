@@ -13,35 +13,41 @@ module Devinstall
     # @param [Symbol] type
     def get_version(type)
       if type == :deb
-        deb_changelog = File.expand_path "#{Settings.local[:folder]}/#{@package}/debian/changelog" # This is the folder that should be checked
-        deb_package_version =File.open(deb_changelog, 'r').gets.chomp.sub(/^.*\((.*)\).*$/, '\1')
-        @_package_version[:deb]=deb_package_version
+        begin
+          deb_changelog = File.expand_path "#{Settings.local[:folder]}/#{@package}/debian/changelog" # This is the folder that should be checked
+          deb_package_version = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\((.*)\).*$/, '\1') }
+          @_package_version[:deb] = deb_package_version
+
+        rescue IOError => e
+          puts "IO Error while opening #{deb_changelog}"
+          puts "Aborting \n #{e}"
+          exit! 1
+        end
       end
     end
 
     # @param [String] package
     def initialize (package)
       # curently implemented only for .deb packages (for .rpm later :D)
-      @package =package.to_sym
-      @_package_version =Hash.new # versions for types:
-      @package_files =Hash.new
-      arch =Settings.build[:arch]
-      pname ="#{package}_#{get_version :deb}"
-      @package_files[:deb] ={deb: "#{pname}_#{arch}.deb",
-                             tgz: "#{pname}.tar.gz",
-                             dsc: "#{pname}.dsc",
-                             chg: "#{pname}_amd64.changes"}
+      @package = package.to_sym
+      @_package_version = Hash.new # versions for types:
+      @package_files = Hash.new
+      arch = Settings.build[:arch]
+      pname = "#{package}_#{get_version :deb}"
+      @package_files[:deb] = {deb: "#{pname}_#{arch}.deb",
+                              tgz: "#{pname}.tar.gz",
+                              dsc: "#{pname}.dsc",
+                              chg: "#{pname}_amd64.changes"}
     end
 
-    def upload (environment)
-      scp =Settings.base[:scp]
-      repo =Hash.new
-      type =Settings.repos[:environments][environment][:type]
+    def upload (env)
+      scp = Settings.base[:scp]
+      repo = {}
+      type = Settings.repos[:environments][env][:type]
       [:user, :host, :folder].each do |k|
-        fail("Unexistent key repos:#{environment}:#{k}") unless Settings.repos[:environments][environment].has_key?(k)
-        repo[k]=Settings.repos[:environments][environment][k]
+        fail("Unexistent key repos:#{environment}:#{k}") unless Settings.repos[:environments][env].has_key?(k)
+        repo[k] = Settings.repos[:environments][env][k]
       end
-      build(type)
       @package_files[type].each do |p|
         system("#{scp} #{Settings.local[:temp]}/#{p} #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}")
       end
@@ -50,25 +56,25 @@ module Devinstall
     # @param [Symbol] type
     def build (type)
       puts "Building package #{@package} type #{type.to_s}"
-      unless Settings.packages[@package].has_key?(type)
-        puts("Package '#{@package}' cannot be built for the required environment")
-        puts("undefined build configuration for '#{type.to_s}'")
-        exit!(1)
+      unless Settings.packages[@package].has_key? type
+        puts "Package '#{@package}' cannot be built for the required environment"
+        puts "undefined build configuration for '#{type.to_s}'"
+        exit! 1
       end
-      build =Hash.new
+      build = {}
       [:user, :host, :folder, :target].each do |k|
-        unless Settings.build.has_key?(k)
-          puts("Undefined key 'build:#{k.to_s}:'")
-          exit!(1)
+        unless Settings.build.has_key? k
+          puts "Undefined key 'build:#{k.to_s}:'"
+          exit! 1
         end
-        build[k]=Settings.build[k]
+        build[k] = Settings.build[k]
       end
 
-      ssh =Settings.base[:ssh]
-      build_command=Settings.packages[@package][type][:build_command]
-      rsync =Settings.base[:rsync]
-      local_folder =File.expand_path Settings.local[:folder]
-      local_temp =File.expand_path Settings.local[:temp]
+      ssh = Settings.base[:ssh]
+      build_command = Settings.packages[@package][type][:build_command]
+      rsync = Settings.base[:rsync]
+      local_folder = File.expand_path Settings.local[:folder]
+      local_temp = File.expand_path Settings.local[:temp]
 
       build_command = build_command.gsub('%f', build[:folder]).
           gsub('%t', Settings.build[:target]).
@@ -76,41 +82,51 @@ module Devinstall
           gsub('%T', type.to_s)
 
       upload_sources("#{local_folder}/", "#{build[:user]}@#{build[:host]}:#{build[:folder]}")
-      system("#{ssh} #{build[:user]}@#{build[:host]} \"#{build_command}\"")
+      res = system("#{ssh} #{build[:user]}@#{build[:host]} \"#{build_command}\"")
+      unless res
+        puts 'Build error'
+        puts 'Aborting!'
+        exit! 1
+      end
       @package_files[type].each do |p, t|
         puts "Receiving target #{p.to_s} for #{t.to_s}"
-        system("#{rsync} -az #{build[:user]}@#{build[:host]}:#{build[:target]}/#{t} #{local_temp}")
+        res = system("#{rsync} -az #{build[:user]}@#{build[:host]}:#{build[:target]}/#{t} #{local_temp}")
+        unless res
+          puts 'File downloading error'
+          puts 'Aborting!'
+          exit! 1
+        end
       end
     end
 
-    def run_tests(environment)
+    def run_tests(env)
       # for tests we will use aprox the same setup as for build
-      test =Hash.new
+      test = {}
       [:user, :machine, :command, :folder].each do |k|
-        unless Settings.tests[environment].has_key?(k)
+        unless Settings.tests[env].has_key? k
           puts("Undefined key 'tests:#{environment}:#{k.to_s}:'")
-          exit!(1)
+          exit! 1
         end
-        test[k]=Settings.tests[environment][k]
+        test[k] = Settings.tests[env][k]
       end
-      ssh =Settings.base[:ssh]
+      ssh = Settings.base[:ssh]
 
       test[:command] = test[:command].gsub('%f', test[:folder]).
           gsub('%t', Settings.build[:target]).
           gsub('%p', @package.to_s)
 
-      local_folder =File.expand_path Settings.local[:folder] #take the sources from the local folder
+      local_folder = File.expand_path Settings.local[:folder] #take the sources from the local folder
 
       upload_sources("#{local_folder}/", "#{test[:user]}@#{test[:machine]}:#{test[:folder]}") # upload them to the test machine
 
       puts "Running all tests for the #{environment} environment"
       puts "This will take some time"
-      ret=system("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
+      ret = system("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
       if ret
         puts "Errors during test. Aborting current procedure"
         exit! 1
       end
-    rescue Exception => ee
+    rescue => ee
       puts "Unknown exception during parsing config file"
       puts "Aborting (#{ee})"
       exit! 1
@@ -118,17 +134,17 @@ module Devinstall
 
     def install (environment)
       puts "Installing #{@package} in #{environment} environment."
-      sudo =Settings.base[:sudo]
-      scp =Settings.base[:scp]
-      type=Settings.install[:environments][environment][:type].to_sym
-      local_temp =Settings.local[:temp]
-      install=Hash.new
+      local_temp = Settings.local[:temp]
+      sudo = Settings.base[:sudo]
+      scp = Settings.base[:scp]
+      type = Settings.install[:environments][environment][:type].to_sym
+      install = {}
       [:user, :host, :folder].each do |k|
-        unless Settings.install[:environments][environment].has_key?(k)
+        unless Settings.install[:environments][environment].has_key? k
           puts "Undefined key 'install:#{environment.to_s}:#{k.to_s}'"
           exit! 1
         end
-        install[k]=Settings.install[:environments][environment][k]
+        install[k] = Settings.install[:environments][environment][k]
       end
       case type
         when :deb
@@ -141,8 +157,14 @@ module Devinstall
     end
 
     def upload_sources (source, dest)
-      rsync =Settings.base[:rsync]
-      system("#{rsync} -az #{source} #{dest}")
+      rsync = Settings.base[:rsync]
+      res = system("#{rsync} -az #{source} #{dest}")
+      unless res
+        puts "Rsync error"
+        puts "Aborting!"
+        exit! 1
+      end
+      res
     end
   end
 end
