@@ -65,18 +65,18 @@ module Devinstall
     end
 
     def install
-      package.build(@opt['type'].to_sym)
-      package.install(@opt['env'].to_sym)
+      @package.build(@opt['type'].to_sym)
+      @package.install(@opt['env'].to_sym)
     end
 
     def upload
-      package.build(@opt['type'].to_sym)
-      package.run_tests(@opt['env'].to_sym)
-      package.upload(@opt['env'].to_sym)
+      @package.build(@opt['type'].to_sym)
+      @package.run_tests(@opt['env'].to_sym)
+      @package.upload(@opt['env'].to_sym)
     end
 
     def test
-      package.run_tests(@opt['env'].to_sym)
+      @package.run_tests(@opt['env'].to_sym)
     end
 
   end
