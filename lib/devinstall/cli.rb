@@ -14,7 +14,7 @@ module Devinstall
       @opt['config']
     end
 
-    def initialize
+    def initialize(package)
       begin
         @opt = Getopt::Long.getopts(
             ['--package', '-p', Getopt::REQUIRED],
@@ -42,6 +42,9 @@ module Devinstall
       # complete from default values
       %w"package env type".each { |o| @opt[o] ||= Settings.defaults[o.to_sym] if Settings.defaults[o.to_sym] }
       # verify all informations
+      if package != '' # a packege was supplied on commandline
+        @opt['package'] = package # this overrides all
+      end
       %w"package type env".each do |k|
         unless @opt[k]
           puts "You must specify option '#{k}' either as default or in command line"

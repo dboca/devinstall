@@ -32,6 +32,11 @@ module Devinstall
     # @param [String] package
     def initialize (package)
       # curently implemented only for .deb packages (for .rpm later :D)
+      unless Settings.packages.has_key? package.to_sym
+        puts "You required an undefined package #{package}"
+        puts "Aborting!"
+        exit! 1
+      end
       @package = package.to_sym
       @_package_version = Hash.new # versions for types:
       @package_files = Hash.new
@@ -141,13 +146,18 @@ module Devinstall
         end
         install[k] = Settings.install[:environments][environment][k]
       end
+
+      install[:host] = [install[:host]] unless Array === install[:host]
+
       case type
-        when :deb
-          command("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}:#{install[:folder]}")
-          command("#{sudo} #{install[:user]}@#{install[:host]} /usr/bin/dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
-        else
-          puts "unknown package type '#{type.to_s}'"
-          exit! 1
+      when :deb
+        install[:host].each do |host|
+          command("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{host}:#{install[:folder]}")
+          command("#{sudo} #{install[:user]}@#{host} /usr/bin/dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
+        end
+      else
+        puts "unknown package type '#{type.to_s}'"
+        exit! 1
       end
     end
 

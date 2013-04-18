@@ -3,11 +3,20 @@
 require 'devinstall/cli'
 
 command = ARGV.shift
+package = ''
 
 unless %w"build install upload help version test".include? command
   puts "Unknown command #{command}"
   exit! 1
 end
-cli=Devinstall::Cli.new
+
+## the next should be the package
+# so if ARGV[0] don't start with --
+# we name it package
+if ARGV[0][0..1] != '--'
+  package = ARGV.shift
+end
+
+cli=Devinstall::Cli.new(package)
 cli.send(command.to_sym)
 
