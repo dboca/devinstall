@@ -1,5 +1,6 @@
 require 'devinstall/version'
 require 'devinstall/deep_symbolize'
+require 'devinstall/utils'
 require 'devinstall/settings' ##  in near future we will have to abandon Settings
                               # for something more complex because we will need to
                               # define things (repos/install-hosts) for different
@@ -9,6 +10,8 @@ require 'pp'
 module Devinstall
 
   class Pkg
+
+    include Utils
 
     # @param [Symbol] type
     def get_version(type)
@@ -43,13 +46,18 @@ module Devinstall
     def upload (env)
       scp = Settings.base[:scp]
       repo = {}
-      type = Settings.repos[:environments][env][:type]
+      type = Settings.repos[:environments][env][:type].to_sym
       [:user, :host, :folder].each do |k|
-        fail("Unexistent key repos:#{environment}:#{k}") unless Settings.repos[:environments][env].has_key?(k)
+        unless Settings.repos[:environments][env].has_key?(k)
+          puts "Unexistent key #{k} in repos:environments:#{env}"
+          puts "Aborting"
+          exit! 1
+        end
         repo[k] = Settings.repos[:environments][env][k]
       end
-      @package_files[type].each do |p|
-        system("#{scp} #{Settings.local[:temp]}/#{p} #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}")
+      @package_files[type].each do |p,f|
+        puts "Uploading #{f}\t\t[#{p}] to $#{repo[:host]}"
+        command("#{scp} #{Settings.local[:temp]}/#{f} #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}")
       end
     end
 
@@ -65,6 +73,7 @@ module Devinstall
       [:user, :host, :folder, :target].each do |k|
         unless Settings.build.has_key? k
           puts "Undefined key 'build:#{k.to_s}:'"
+          puts "Aborting!"
           exit! 1
         end
         build[k] = Settings.build[k]
@@ -82,20 +91,10 @@ module Devinstall
           gsub('%T', type.to_s)
 
       upload_sources("#{local_folder}/", "#{build[:user]}@#{build[:host]}:#{build[:folder]}")
-      res = system("#{ssh} #{build[:user]}@#{build[:host]} \"#{build_command}\"")
-      unless res
-        puts 'Build error'
-        puts 'Aborting!'
-        exit! 1
-      end
+      command("#{ssh} #{build[:user]}@#{build[:host]} \"#{build_command}\"")
       @package_files[type].each do |p, t|
         puts "Receiving target #{p.to_s} for #{t.to_s}"
-        res = system("#{rsync} -az #{build[:user]}@#{build[:host]}:#{build[:target]}/#{t} #{local_temp}")
-        unless res
-          puts 'File downloading error'
-          puts 'Aborting!'
-          exit! 1
-        end
+        command("#{rsync} -az #{build[:user]}@#{build[:host]}:#{build[:target]}/#{t} #{local_temp}")
       end
     end
 
@@ -104,7 +103,7 @@ module Devinstall
       test = {}
       [:user, :machine, :command, :folder].each do |k|
         unless Settings.tests[env].has_key? k
-          puts("Undefined key 'tests:#{environment}:#{k.to_s}:'")
+          puts("Undefined key 'tests:#{env}:#{k.to_s}:'")
           exit! 1
         end
         test[k] = Settings.tests[env][k]
@@ -119,13 +118,9 @@ module Devinstall
 
       upload_sources("#{local_folder}/", "#{test[:user]}@#{test[:machine]}:#{test[:folder]}") # upload them to the test machine
 
-      puts "Running all tests for the #{environment} environment"
-      puts "This will take some time"
-      ret = system("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
-      if ret
-        puts "Errors during test. Aborting current procedure"
-        exit! 1
-      end
+      puts "Running all tests for the #{env} environment"
+      puts "This will take some time and you have no output"
+      command("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
     rescue => ee
       puts "Unknown exception during parsing config file"
       puts "Aborting (#{ee})"
@@ -148,8 +143,8 @@ module Devinstall
       end
       case type
         when :deb
-          system("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}:#{install[:folder]}")
-          system("#{sudo} #{Settings.build[:user]}@#{Settings.build[:host]} /usr/bin/dpkg -i '#{install[:folder]}/#{@package_files[type][:deb]}'")
+          command("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}:#{install[:folder]}")
+          command("#{sudo} #{install[:user]}@#{install[:host]} /usr/bin/dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
         else
           puts "unknown package type '#{type.to_s}'"
           exit! 1
@@ -158,13 +153,7 @@ module Devinstall
 
     def upload_sources (source, dest)
       rsync = Settings.base[:rsync]
-      res = system("#{rsync} -az #{source} #{dest}")
-      unless res
-        puts "Rsync error"
-        puts "Aborting!"
-        exit! 1
-      end
-      res
+      command("#{rsync} -az #{source} #{dest}")
     end
   end
 end

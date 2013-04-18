@@ -6,7 +6,8 @@ command = ARGV.shift
 
 unless %w"build install upload help version test".include? command
   puts "Unknown command #{command}"
-  exit 1
+  exit! 1
 end
-cli=Cli.new
+cli=Devinstall::Cli.new
 cli.send(command.to_sym)
+
