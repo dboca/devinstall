@@ -30,9 +30,13 @@ All the actions you can do via this tool.
 The general command line syntax is:
 
 	$ pkg_tool <action> [<package>] [--env <environment>] [--type <type>] [--config <config_file>]
-where:
+
+Where:
+
   * action can be one of the:
+
   	build
+
 Builds the package on the {{build/env/host}} and copy the package file(s) back in the {{base/temp}} folder
 
 
