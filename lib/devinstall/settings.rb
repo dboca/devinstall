@@ -29,36 +29,8 @@ module Settings
     target.merge! data, &merger
   end
 
-  def defaults
-    @_settings[:defaults]
-  end
-
-  def tests
-    @_settings[:tests]
-  end
-
-  def base
-    @_settings[:base]
-  end
-
-  def local
-    @_settings[:local]
-  end
-
-  def build
-    @_settings[:build]
-  end
-
-  def install
-    @_settings[:install]
-  end
-
-  def repos
-    @_settings[:repos]
-  end
-
-  def packages
-    @_settings[:packages]
+  %w(defaults tests base local build install repos packages).each do |m|
+    define_method m {@_settings[m.to_sym]}
   end
 
 end
