@@ -20,17 +20,18 @@ module Devinstall
           begin
             deb_changelog = File.expand_path "#{Settings.local[:folder]}/#{@package}/debian/changelog" # This is the folder that should be checked
             unless File.exists? deb_changelog
-              puts "No 'debian/changelog' found in specified :local:folder (#{Settings.local[:folder]})"
-              puts 'Please check your config file'
-              puts 'Aborting!'
-              exit! 1
+              exit! <<-eos
+                No 'debian/changelog' found in specified :local:folder (#{Settings.local[:folder]})
+                Please check your config file
+              eos
             end
             @_package_version[:deb] = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\((.*)\).*$/, '\1') }
 
           rescue IOError => e
-            puts "IO Error while opening #{deb_changelog}"
-            puts "Aborting \n #{e}"
-            exit! 1
+            exit! <<-eos
+              IO Error while opening #{deb_changelog}
+              Aborting \n #{e}
+            eos
           end
       end
     end
@@ -40,9 +41,7 @@ module Devinstall
     def initialize (package)
       # curently implemented only for .deb packages (for .rpm later :D)
       unless Settings.packages.has_key? package.to_sym
-        puts "You required an undefined package #{package}"
-        puts 'Aborting!'
-        exit! 1
+        exit! "You required an undefined package #{package}"
       end
       @package = package.to_sym
       @_package_version = Hash.new # versions for types:
@@ -61,9 +60,7 @@ module Devinstall
       type = Settings.repos[:environments][env][:type].to_sym
       [:user, :host, :folder].each do |k|
         unless Settings.repos[:environments][env].has_key?(k)
-          puts "Undefined key #{k} in repos:environments:#{env}"
-          puts 'Aborting'
-          exit! 1
+          exit! "Undefined key #{k} in repos:environments:#{env}"
         end
         repo[k] = Settings.repos[:environments][env][k]
       end
@@ -77,16 +74,12 @@ module Devinstall
     def build (type)
       puts "Building package #{@package} type #{type.to_s}"
       unless Settings.packages[@package].has_key? type
-        puts "Package '#{@package}' cannot be built for the required environment"
-        puts "undefined build configuration for '#{type.to_s}'"
-        exit! 1
+        exit! "Package '#{@package}' cannot be built for the required environment"
       end
       build = {}
       [:user, :host, :folder, :target].each do |k|
         unless Settings.build.has_key? k
-          puts "Undefined key 'build:#{k.to_s}:'"
-          puts 'Aborting!'
-          exit! 1
+          exit! "Undefined key 'build:#{k.to_s}:'"
         end
         build[k] = Settings.build[k]
       end
@@ -115,8 +108,7 @@ module Devinstall
       test = {}
       [:user, :machine, :command, :folder].each do |k|
         unless Settings.tests[env].has_key? k
-          puts("Undefined key 'tests:#{env}:#{k.to_s}:'")
-          exit! 1
+          exit! "Undefined key 'tests:#{env}:#{k.to_s}:'"
         end
         test[k] = Settings.tests[env][k]
       end
@@ -133,11 +125,6 @@ module Devinstall
       puts "Running all tests for the #{env} environment"
       puts 'This will take some time and you have no output'
       command("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
-    rescue => ee
-      puts 'Unknown exception during parsing config file'
-      puts "Aborting (#{ee})"
-      puts ee.backtrace
-      exit! 1
     end
 
     def install (environment)
@@ -149,8 +136,7 @@ module Devinstall
       install = {}
       [:user, :host, :folder].each do |k|
         unless Settings.install[:environments][environment].has_key? k
-          puts "Undefined key 'install:#{environment.to_s}:#{k.to_s}'"
-          exit! 1
+          exit! "Undefined key 'install:#{environment.to_s}:#{k.to_s}'"
         end
         install[k] = Settings.install[:environments][environment][k]
       end
@@ -164,8 +150,7 @@ module Devinstall
             command("#{sudo} #{install[:user]}@#{host} /usr/bin/dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
           end
         else
-          puts "unknown package type '#{type.to_s}'"
-          exit! 1
+          exit! "unknown package type '#{type.to_s}'"
       end
     end
 
