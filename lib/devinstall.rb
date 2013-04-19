@@ -16,43 +16,43 @@ module Devinstall
     # @param [Symbol] type
     def get_version(type)
       case type
-      when :deb
-        begin
-          deb_changelog = File.expand_path "#{Settings.local[:folder]}/#{@package}/debian/changelog" # This is the folder that should be checked
-          unless File.exists? deb_changelog
-            puts "No 'debian/changelog' found in specified :local:folder (#{Settings.local[:folder]})"
-            puts "Please check your config file"
-            puts "Aborting!"
+        when :deb
+          begin
+            deb_changelog = File.expand_path "#{Settings.local[:folder]}/#{@package}/debian/changelog" # This is the folder that should be checked
+            unless File.exists? deb_changelog
+              puts "No 'debian/changelog' found in specified :local:folder (#{Settings.local[:folder]})"
+              puts 'Please check your config file'
+              puts 'Aborting!'
+              exit! 1
+            end
+            @_package_version[:deb] = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\((.*)\).*$/, '\1') }
+
+          rescue IOError => e
+            puts "IO Error while opening #{deb_changelog}"
+            puts "Aborting \n #{e}"
             exit! 1
           end
-          @_package_version[:deb] = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\((.*)\).*$/, '\1') }
-
-        rescue IOError => e
-          puts "IO Error while opening #{deb_changelog}"
-          puts "Aborting \n #{e}"
-          exit! 1
-        end
-        end
       end
     end
+
 
     # @param [String] package
     def initialize (package)
       # curently implemented only for .deb packages (for .rpm later :D)
       unless Settings.packages.has_key? package.to_sym
         puts "You required an undefined package #{package}"
-        puts "Aborting!"
+        puts 'Aborting!'
         exit! 1
       end
       @package = package.to_sym
       @_package_version = Hash.new # versions for types:
       @package_files = Hash.new
       arch = Settings.build[:arch]
-      pname = "#{package}_#{get_version :deb}"
-      @package_files[:deb] = {deb: "#{pname}_#{arch}.deb",
-                              tgz: "#{pname}.tar.gz",
-                              dsc: "#{pname}.dsc",
-                              chg: "#{pname}_amd64.changes"}
+      p_name = "#{package}_#{get_version :deb}"
+      @package_files[:deb] = {deb: "#{p_name}_#{arch}.deb",
+                              tgz: "#{p_name}.tar.gz",
+                              dsc: "#{p_name}.dsc",
+                              chg: "#{p_name}_amd64.changes"}
     end
 
     def upload (env)
@@ -61,13 +61,13 @@ module Devinstall
       type = Settings.repos[:environments][env][:type].to_sym
       [:user, :host, :folder].each do |k|
         unless Settings.repos[:environments][env].has_key?(k)
-          puts "Unexistent key #{k} in repos:environments:#{env}"
-          puts "Aborting"
+          puts "Undefined key #{k} in repos:environments:#{env}"
+          puts 'Aborting'
           exit! 1
         end
         repo[k] = Settings.repos[:environments][env][k]
       end
-      @package_files[type].each do |p,f|
+      @package_files[type].each do |p, f|
         puts "Uploading #{f}\t\t[#{p}] to $#{repo[:host]}"
         command("#{scp} #{Settings.local[:temp]}/#{f} #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}")
       end
@@ -85,7 +85,7 @@ module Devinstall
       [:user, :host, :folder, :target].each do |k|
         unless Settings.build.has_key? k
           puts "Undefined key 'build:#{k.to_s}:'"
-          puts "Aborting!"
+          puts 'Aborting!'
           exit! 1
         end
         build[k] = Settings.build[k]
@@ -131,11 +131,12 @@ module Devinstall
       upload_sources("#{local_folder}/", "#{test[:user]}@#{test[:machine]}:#{test[:folder]}") # upload them to the test machine
 
       puts "Running all tests for the #{env} environment"
-      puts "This will take some time and you have no output"
+      puts 'This will take some time and you have no output'
       command("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
     rescue => ee
-      puts "Unknown exception during parsing config file"
+      puts 'Unknown exception during parsing config file'
       puts "Aborting (#{ee})"
+      puts ee.backtrace
       exit! 1
     end
 
@@ -157,22 +158,22 @@ module Devinstall
       install[:host] = [install[:host]] unless Array === install[:host]
 
       case type
-      when :deb
-        install[:host].each do |host|
-          command("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{host}:#{install[:folder]}")
-          command("#{sudo} #{install[:user]}@#{host} /usr/bin/dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
-        end
-      else
-        puts "unknown package type '#{type.to_s}'"
-        exit! 1
+        when :deb
+          install[:host].each do |host|
+            command("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{host}:#{install[:folder]}")
+            command("#{sudo} #{install[:user]}@#{host} /usr/bin/dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
+          end
+        else
+          puts "unknown package type '#{type.to_s}'"
+          exit! 1
       end
     end
-    
+
     def upload_sources (source, dest)
       rsync = Settings.base[:rsync]
       command("#{rsync} -az #{source} #{dest}")
     end
   end
-end
 
+end
 

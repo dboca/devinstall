@@ -20,9 +20,9 @@ module Devinstall
             ['--package', '-p', Getopt::REQUIRED],
             ['--config', '-c', Getopt::REQUIRED],
             ['--type', '-t', Getopt::REQUIRED],
-                                    ['--env','-e', Getopt::REQUIRED],
-                                    ['--verbose', '-v'],
-                                    ['--dry-run', '-d'],
+            ['--env', '-e', Getopt::REQUIRED],
+            ['--verbose', '-v'],
+            ['--dry-run', '-d'],
         )
       rescue
         puts 'Invalid option in command line'
@@ -31,7 +31,7 @@ module Devinstall
       end
       #verbose and dry-run
       $verbose ||= @opt['verbose']
-      $dry     ||= @opt['dry-run']
+      $dry ||= @opt['dry-run']
       # get config file
       unless get_config(["./devinstall.yml"])
         puts 'You must specify the config file'
@@ -76,3 +76,4 @@ module Devinstall
 
   end
 end
+

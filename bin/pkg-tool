@@ -2,10 +2,15 @@
 
 require 'devinstall/cli'
 
-command = ARGV.shift
-package = ''
+unless ARGV[0]
+  puts "You must specify an action"
+  exit! 1
+end
 
-if %w"version --version -v".include? command 
+package = ''
+command = ARGV.shift
+
+if %w"version --version -v".include? command
   puts "devinstall version #{Devinstall::VERSION}"
   puts "pkg-tool version   #{Devinstall::VERSION}"
   exit! 0
@@ -13,7 +18,7 @@ end
 
 if %w"help --help -h".include? command
   puts 'Usage:'
-  puts 'pkg-install command --config|-c <file> --package|-p <package> --type|-t <package_type> --env|-e <environment>'
+  puts 'pkg-tool command [package_name] --config|-c <file>  --type|-t <package_type> --env|-e <environment>'
   puts 'where command is one of the: build, install, upload, help, version'
   exit! 0
 end
