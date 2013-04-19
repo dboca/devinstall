@@ -2,12 +2,23 @@ base:
   rsync: /usr/bin/rsync
   ssh: /usr/bin/ssh
   scp: /usr/bin/scp
-  sudo: /usr/bin/sshsudo
+  sudo: sshsudo
+defaults:
+  package: devinstall
+  env: dev
+  type: deb
+tests:
+# dev is the environment
+  dev: 
+    machine: dboca.dev.local
+    folder: rs
+    user: dboca
+    command: "cd %f && make devtest"
 local:
 # folder - source folder
 # temp - temporary folder
-  folder: ~/work/project
-  temp: ~/tmp
+  folder: ~/projects/devinstall
+  temp: ~/.tmp
 build:
 # host - build machine
 # folder - rsync to?
@@ -15,7 +26,7 @@ build:
 # user - for ssh / rsync
 # arch is the architecture for the generated package (like amd64 or i686)
   user: dboca
-  host: vm.development.lan
+  host: vm-dboca.dev.local
   folder: rs
   target: rs
   arch: all
@@ -26,29 +37,24 @@ install:
   user: dboca
   environments:
     dev:
-      host: dev01.server.lan
+      host:
+        - server1.lan
+        - server2.lan
+      folder: /home/dboca ## folder for scp/dpkg -i
+      user: dboca
       type: deb
-      folder: ~ ## folder for scp
-      user: dboca1
       arch: all
-    prod:
-      host: prod01.server.lan
-      type: rpm
-      arch: all
-      # user defaults to install[:user]
 repos:
 # for repository deployment
 # in a repository should be all packages for all architectures so we don't have an 'arch:' field
    environments:
      dev:
        type: deb
-       user: upload
-       host: debian-repo01.server.lan
-       folder: /srv/repo
-     dev-rh:
-       type: rpm
+       user: dboca
+       host: dboca.repo.lan
+       folder: /srv/repo/incoming
 packages:
-  ui-lbgenerate:
+  devinstall:
 # might contain all the sections above (local, build, install, repodeploy)
 # type and build_command are mandatory
 # in build_command the folowing expansions are made:
@@ -57,7 +63,4 @@ packages:
 #  %p package (current package)
 #  %T type (deb, rpm, tar.gz ,...)
     deb:
-      build_command: "cd %f && dpkg-buildpackage"
-  ui-lbcli:
-    deb:
-      build_command: "cd %f && dpkg-buildpackage"
+      build_command: "cd %f/%p && dpkg-buildpackage"
