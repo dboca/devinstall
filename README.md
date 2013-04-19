@@ -63,7 +63,7 @@ This will build and install the package "devinstall" on dev environment
 
 or
 
-    $ pkg-tool upload devinstall --config ./config.yml --env dev-rh --package ui-lbgenerate --action upload
+    $ pkg-tool upload devinstall --config ./config.yml --env dev-rh
 
 This will build and upload package "devinstall" to repository for dev-rh environment as defined in config.yml
 
