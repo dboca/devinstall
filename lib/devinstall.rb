@@ -15,7 +15,8 @@ module Devinstall
 
     # @param [Symbol] type
     def get_version(type)
-      if type == :deb
+      case type
+      when :deb
         begin
           deb_changelog = File.expand_path "#{Settings.local[:folder]}/#{@package}/debian/changelog" # This is the folder that should be checked
           unless File.exists? deb_changelog
@@ -24,13 +25,13 @@ module Devinstall
             puts "Aborting!"
             exit! 1
           end
-          deb_package_version = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\((.*)\).*$/, '\1') }
-          @_package_version[:deb] = deb_package_version
+          @_package_version[:deb] = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\((.*)\).*$/, '\1') }
 
         rescue IOError => e
           puts "IO Error while opening #{deb_changelog}"
           puts "Aborting \n #{e}"
           exit! 1
+        end
         end
       end
     end
@@ -166,7 +167,7 @@ module Devinstall
         exit! 1
       end
     end
-
+    
     def upload_sources (source, dest)
       rsync = Settings.base[:rsync]
       command("#{rsync} -az #{source} #{dest}")
