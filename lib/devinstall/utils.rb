@@ -20,5 +20,10 @@ module Utils
     ret
   end
 
+  def exit! msg
+    puts msg || "Aborting!"
+    Kernel.exit 1
+  end
+
 
 end #module

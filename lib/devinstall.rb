@@ -127,18 +127,18 @@ module Devinstall
       command("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
     end
 
-    def install (environment)
-      puts "Installing #{@package} in #{environment} environment."
+    def install (env)
+      puts "Installing #{@package} in #{env} environment."
       local_temp = Settings.local[:temp]
       sudo = Settings.base[:sudo]
       scp = Settings.base[:scp]
-      type = Settings.install[:environments][environment][:type].to_sym
+      type = Settings.install[:environments][env][:type].to_sym
       install = {}
       [:user, :host, :folder].each do |k|
-        unless Settings.install[:environments][environment].has_key? k
-          exit! "Undefined key 'install:#{environment.to_s}:#{k.to_s}'"
+        unless Settings.install[:environments][env].has_key? k
+          exit! "Undefined key 'install:#{env.to_s}:#{k.to_s}'"
         end
-        install[k] = Settings.install[:environments][environment][k]
+        install[k] = Settings.install[:environments][env][k]
       end
 
       install[:host] = [install[:host]] unless Array === install[:host]

@@ -3,9 +3,8 @@ require 'getopt/long'
 require 'devinstall/settings'
 module Devinstall
   class Cli
-    # extend self
-    # make this module a singleton also
-    # See why
+
+include Utils
 
     def get_config(fnames)
       fnames.each do |f|
@@ -27,15 +26,13 @@ module Devinstall
       rescue
         puts 'Invalid option in command line'
         help
-        exit! 1
       end
       #verbose and dry-run
       $verbose ||= @opt['verbose']
       $dry ||= @opt['dry-run']
       # get config file
       unless get_config(["./devinstall.yml"])
-        puts 'You must specify the config file'
-        exit! 1 # Exit
+        exit! 'You must specify the config file'
       end
       # parse config file
       Settings.load!(@opt['config'])
@@ -72,6 +69,19 @@ module Devinstall
 
     def test
       @package.run_tests(@opt['env'].to_sym)
+    end
+  
+    def help
+      puts 'Usage:'
+      puts 'pkg-tool command [package_name] --config|-c <file>  --type|-t <package_type> --env|-e <environment>'
+      puts 'where command is one of the: build, install, upload, help, version'
+      exit! 0
+    end
+
+    def version
+      puts "devinstall version #{Devinstall::VERSION}"
+      puts "pkg-tool version   #{Devinstall::VERSION}"
+      exit! 0
     end
 
   end
