@@ -15,6 +15,12 @@ module Devinstall
       if type == :deb
         begin
           deb_changelog = File.expand_path "#{Settings.local[:folder]}/#{@package}/debian/changelog" # This is the folder that should be checked
+          unless File.exists? deb_changelog
+            puts "No 'debian/changelog' found in specified :local:folder (#{Settings.local[:folder]})"
+            puts "Please check your config file"
+            puts "Aborting!"
+            exit! 1
+          end
           deb_package_version = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\((.*)\).*$/, '\1') }
           @_package_version[:deb] = deb_package_version
 
@@ -147,12 +153,20 @@ module Devinstall
         install[k] = Settings.install[:environments][environment][k]
       end
       case type
-        when :deb
-          system("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}:#{install[:folder]}")
-          system("#{sudo} #{Settings.build[:user]}@#{Settings.build[:host]} /usr/bin/dpkg -i '#{install[:folder]}/#{@package_files[type][:deb]}'")
-        else
-          puts "unknown package type '#{type.to_s}'"
+      when :deb
+        unless system("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{install[:host]}:#{install[:folder]}")
+          puts "Error while transfering files to the install host #{install[:host]}"
+          puts "Aborting!"
           exit! 1
+        end
+        unless system("#{sudo} #{Settings.build[:user]}@#{Settings.build[:host]} /usr/bin/dpkg -i '#{@package_files[type][:deb]}'")
+          puts "Install comand did not returned success!"
+          puts "Aborting"
+          exit! 1
+        end
+      else
+        puts "unknown package type '#{type.to_s}'"
+        exit! 1
       end
     end
 
