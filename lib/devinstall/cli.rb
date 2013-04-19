@@ -14,19 +14,24 @@ module Devinstall
       @opt['config']
     end
 
-    def initialize
+    def initialize(package)
       begin
         @opt = Getopt::Long.getopts(
             ['--package', '-p', Getopt::REQUIRED],
             ['--config', '-c', Getopt::REQUIRED],
             ['--type', '-t', Getopt::REQUIRED],
-            ['--env', '-e', Getopt::REQUIRED],
+                                    ['--env','-e', Getopt::REQUIRED],
+                                    ['--verbose', '-v'],
+                                    ['--dry-run', '-d'],
         )
       rescue
         puts 'Invalid option in command line'
         help
         exit! 1
       end
+      #verbose and dry-run
+      $verbose ||= @opt['verbose']
+      $dry     ||= @opt['dry-run']
       # get config file
       unless get_config(["./devinstall.yml"])
         puts 'You must specify the config file'
@@ -37,6 +42,9 @@ module Devinstall
       # complete from default values
       %w"package env type".each { |o| @opt[o] ||= Settings.defaults[o.to_sym] if Settings.defaults[o.to_sym] }
       # verify all informations
+      if package != '' # a packege was supplied on commandline
+        @opt['package'] = package # this overrides all
+      end
       %w"package type env".each do |k|
         unless @opt[k]
           puts "You must specify option '#{k}' either as default or in command line"
@@ -45,19 +53,6 @@ module Devinstall
       end
       # create package
       @package=Devinstall::Pkg.new(@opt['package'])
-    end
-
-    def version
-      puts "devinstall version #{Devinstall::VERSION}"
-      puts "pkg-tool version   #{Devinstall::VERSION}"
-      exit(0)
-    end
-
-    def help
-      puts 'Usage:'
-      puts 'pkg-install command --config|-c <file> --package|-p <package> --type|-t <package_type> --env|-e <environment>'
-      puts 'where command is one of the: build, install, upload, help, version'
-      exit! 0
     end
 
     def build
