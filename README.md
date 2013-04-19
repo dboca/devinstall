@@ -37,10 +37,22 @@ Where:
 
   	build
 
-Builds the package on the {{build/env/host}} and copy the package file(s) back in the {{base/temp}} folder
+Builds the package on the `build/env/host` and copy the package file(s) back in the `base/temp` folder
+
+    install
+
+Build (using `build` command) and install the builded package on the `install/env/host`
+
+    tests
+
+Run the tests described in `test` section of the configuration file
+
+    upload
+
+Build the package, run the tests and upload thr file to the repo
 
 
-Example command:
+## Example command:
 
     $ pkg-tool install devinstall –config ./config.yml --env dev
 
