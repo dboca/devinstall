@@ -53,6 +53,14 @@ Build the package, run the tests and upload thr file to the repo
 
 ### The switches
 
+The command line switches are:
+
+  --config: the config file (defaults to ./devinstall.yml)
+
+  --env: the environment for the install or upload action
+
+  --type: only for –action build and specifies the package type (deb, rpm, tar.gz, arc....)
+
 The switches override the defaults in the config file
 
 ## Example command:
@@ -66,14 +74,6 @@ or
     $ pkg-tool upload devinstall --config ./config.yml --env dev-rh
 
 This will build and upload package "devinstall" to repository for dev-rh environment as defined in config.yml
-
-The command line parameters are:
-
-	--config: the config file (defaults to ./devinstall.yml)
-
-	--env: the environment for the install or upload action
-
-	--type: only for –action build and specifies the package type (deb, rpm, tar.gz, arc....)
 
 ## Contributing
 
