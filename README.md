@@ -33,9 +33,9 @@ The general command line syntax is:
 
 Where:
 
-  * action can be one of the:
+### Action can be one of the:
 
-  	build
+    build
 
 Builds the package on the `build/env/host` and copy the package file(s) back in the `base/temp` folder
 
@@ -51,6 +51,9 @@ Run the tests described in `test` section of the configuration file
 
 Build the package, run the tests and upload thr file to the repo
 
+### The switches
+
+The switches override the defaults in the config file
 
 ## Example command:
 
