@@ -26,7 +26,6 @@ module Devinstall
               eos
             end
             @_package_version[:deb] = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\((.*)\).*$/, '\1') }
-
           rescue IOError => e
             exit! <<-eos
               IO Error while opening #{deb_changelog}
@@ -35,7 +34,6 @@ module Devinstall
           end
       end
     end
-
 
     # @param [String] package
     def initialize (package)
@@ -113,15 +111,15 @@ module Devinstall
         test[k] = Settings.tests[env][k]
       end
       ssh = Settings.base[:ssh]
-
-      test[:command] = test[:command].gsub('%f', test[:folder]).
-          gsub('%t', Settings.build[:target]).
-          gsub('%p', @package.to_s)
-
-      local_folder = File.expand_path Settings.local[:folder] #take the sources from the local folder
-
-      upload_sources("#{local_folder}/", "#{test[:user]}@#{test[:machine]}:#{test[:folder]}") # upload them to the test machine
-
+      # replace "variables" in commands
+      test[:command] = test[:command].
+        gsub('%f', test[:folder]). # %f is the folder where the sources are rsync-ed
+        gsub('%t', Settings.build[:target]). # %t is the folder where the build places the result
+        gsub('%p', @package.to_s) # %p is the package name
+      #take the sources from the local folder
+      local_folder = File.expand_path Settings.local[:folder]
+      # upload them to the test machine
+      upload_sources("#{local_folder}/", "#{test[:user]}@#{test[:machine]}:#{test[:folder]}")
       puts "Running all tests for the #{env} environment"
       puts 'This will take some time and you have no output'
       command("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
@@ -140,9 +138,7 @@ module Devinstall
         end
         install[k] = Settings.install[:environments][env][k]
       end
-
       install[:host] = [install[:host]] unless Array === install[:host]
-
       case type
         when :deb
           install[:host].each do |host|

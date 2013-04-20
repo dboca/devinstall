@@ -7,11 +7,11 @@ unless ARGV[0]
   exit! 1
 end
 
-package = ''
+package = [] # creata a new Array
 command = ARGV.shift
 
-if ARGV[0] and ARGV[0][0..1] != '--'
-  package = ARGV.shift
+while ARGV[0] and ARGV[0][0..1] != '--'
+  package << ARGV.shift
 end
 
 if %w"version --version -v".include? command
@@ -30,6 +30,6 @@ end
 ## the next should be the package
 # so if ARGV[0] don't start with --
 # we name it package
-cli=Devinstall::Cli.new(package)
+cli=Devinstall::Cli.new(*package) ## Cli can be called for multiple packages
 cli.send(command.to_sym)
 
