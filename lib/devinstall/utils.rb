@@ -14,7 +14,7 @@ module Utils
         puts ret
         puts "="*40
         puts "Nothing to do. Aborting!"
-        exit! 1
+        exit! "Done"
       end
     end
     ret
