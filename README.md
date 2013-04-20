@@ -24,8 +24,8 @@ Or install it yourself as:
 
 ## Usage
 
-When you install the gem, the installer automaticaly create an executable named pkg-tool. 
-All the actions you can do via this tool.
+When you install the gem, the installer automaticaly install a program named pkg-tool. 
+All the actions can be done via this tool.
 
 The general command line syntax is:
 
