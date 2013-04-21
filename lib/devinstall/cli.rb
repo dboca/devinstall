@@ -49,10 +49,10 @@ module Devinstall
           help
         end
       end
-      # create package
     end
 
     def build
+      # create package
       @opt['packages'] do |package|
         pk=Devinstall::Pkg.new(package)
         pk.build(@opt['type'].to_sym)
