@@ -16,7 +16,6 @@ include Utils
     def initialize(*package)
       begin
         @opt = Getopt::Long.getopts(
-            ['--package', '-p', Getopt::REQUIRED],
             ['--config', '-c', Getopt::REQUIRED],
             ['--type', '-t', Getopt::REQUIRED],
             ['--env', '-e', Getopt::REQUIRED],
