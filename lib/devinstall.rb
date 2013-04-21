@@ -116,7 +116,7 @@ module Devinstall
         gsub('%f', test[:folder]). # %f is the folder where the sources are rsync-ed
         gsub('%t', Settings.build[:target]). # %t is the folder where the build places the result
         gsub('%p', @package.to_s) # %p is the package name
-      #take the sources from the local folder
+      # take the sources from the local folder
       local_folder = File.expand_path Settings.local[:folder]
       # upload them to the test machine
       upload_sources("#{local_folder}/", "#{test[:user]}@#{test[:machine]}:#{test[:folder]}")
