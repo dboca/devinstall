@@ -4,7 +4,7 @@ require 'devinstall/settings'
 module Devinstall
   class Cli
 
-include Utils
+    include Utils
 
     def get_config(fnames)
       fnames.each do |f|
@@ -28,7 +28,7 @@ include Utils
       end
       #verbose and dry-run
       $verbose ||= @opt['verbose']
-      $dry ||= @opt['dry-run']
+      $dry     ||= @opt['dry-run']
       # get config file
       unless get_config(["./devinstall.yml"])
         exit! 'You must specify the config file'
@@ -36,7 +36,9 @@ include Utils
       # parse config file
       Settings.load!(@opt['config'])
       # complete from default values
-      %w"package env type".each { |o| @opt[o] ||= Settings.defaults[o.to_sym] if Settings.defaults[o.to_sym] }
+      if Settings.defaults # We have to check for the defaults before (no autovivification :( )
+        %w"package env type".each { |o| @opt[o] ||= Settings.defaults[o.to_sym] if Settings.defaults[o.to_sym] }
+      end
       # verify all informations
       if package # a packege was supplied on commandline
         package.each {|p|  @opt['package'] << p }# this overrides all

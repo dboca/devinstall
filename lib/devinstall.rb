@@ -102,7 +102,13 @@ module Devinstall
     end
 
     def run_tests(env)
-      # for tests we will use aprox the same setup as for build
+      # check if we have the test section in the config
+      unless Settings.test
+        puts "No test section in the config file."
+        puts "Skipping tests"
+        return;
+      end
+      # for tests we will use allmost the same setup as for build
       test = {}
       [:user, :machine, :command, :folder].each do |k|
         unless Settings.tests[env].has_key? k

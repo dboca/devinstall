@@ -30,7 +30,9 @@ module Settings
   end
 
   %w(defaults tests base local build install repos packages).each do |m|
-    define_method(m) { @_settings[m.to_sym] }
+    define_method(m) do
+      @_settings[m.to_sym]
+    end
   end
 
 end
