@@ -41,6 +41,7 @@ module Devinstall
       end
       # verify all informations
       if package # a packege was supplied on commandline
+        @opt['package']=[]
         package.each {|p|  @opt['package'] << p }# this overrides all
       end
       %w"package type env".each do |k|
@@ -53,14 +54,14 @@ module Devinstall
 
     def build
       # create package
-      @opt['packages'] do |package|
+      @opt['package'].each do |package|
         pk=Devinstall::Pkg.new(package)
         pk.build(@opt['type'].to_sym)
       end
     end
 
     def install
-      @opt['packages'] do |package|
+      @opt['package'].each do |package|
         pk=Devinstall::Pkg.new(package)
         pk.build(@opt['type'].to_sym)
         pk.install(@opt['env'].to_sym)
@@ -68,7 +69,7 @@ module Devinstall
     end
 
     def upload
-      @opt['packages'].each do |package|
+      @opt['package'].each do |package|
         pk=Devinstall::Pkg.new(package)
         pk.build(@opt['type'].to_sym)
         pk.run_tests(@opt['env'].to_sym)
