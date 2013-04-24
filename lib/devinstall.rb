@@ -1,10 +1,7 @@
 require 'devinstall/version'
 require 'devinstall/deep_symbolize'
 require 'devinstall/utils'
-require 'devinstall/settings' ##  in near future we will have to abandon Settings
-                              # for something more complex because we will need to
-                              # define things (repos/install-hosts) for different
-                              # environments (dev/qa/prelive/live/prod/backup and so)
+require 'devinstall/settings'
 require 'pp'
 
 module Devinstall
@@ -14,14 +11,14 @@ module Devinstall
     include Utils
 
     # @param [Symbol] type
-    def get_version(type)
-      case type
+    def get_version
+      case @config.type
         when :deb
           begin
-            deb_changelog = File.expand_path "#{Settings.local[:folder]}/#{@package}/debian/changelog" # This is the folder that should be checked
+            deb_changelog = File.expand_path "#{@config.local(:folder)}/#{@package}/debian/changelog" # This is the folder that should be checked
             unless File.exists? deb_changelog
               exit! <<-eos
-                No 'debian/changelog' found in specified :local:folder (#{Settings.local[:folder]})
+                No 'debian/changelog' found in specified :local:folder (#{@config.local(:folder)})
                 Please check your config file
               eos
             end
@@ -36,60 +33,48 @@ module Devinstall
     end
 
     # @param [String] package
-    def initialize (package)
-      # curently implemented only for .deb packages (for .rpm later :D)
-      unless Settings.packages.has_key? package.to_sym
-        exit! "You required an undefined package #{package}"
-      end
+    def initialize (package,config)
+      @config=config #class variable,first thing!
+      # currently implemented only for .deb packages (for .rpm later :D)
       @package = package.to_sym
-      @_package_version = Hash.new # versions for types:
-      @package_files = Hash.new
-      arch = Settings.build[:arch]
-      p_name = "#{package}_#{get_version :deb}"
+      @_package_version = {} # versions for types:
+      @package_files = {}
+      arch = @config.build(:arch)
+      p_name = "#{package}_#{get_version}"
       @package_files[:deb] = {deb: "#{p_name}_#{arch}.deb",
                               tgz: "#{p_name}.tar.gz",
                               dsc: "#{p_name}.dsc",
                               chg: "#{p_name}_amd64.changes"}
     end
 
-    def upload (env)
-      scp = Settings.base[:scp]
+    def upload
+      scp = @config.base(:scp)
       repo = {}
-      type = Settings.repos[:environments][env][:type].to_sym
-      [:user, :host, :folder].each do |k|
-        unless Settings.repos[:environments][env].has_key?(k)
-          exit! "Undefined key #{k} in repos:environments:#{env}"
-        end
-        repo[k] = Settings.repos[:environments][env][k]
+      [:user, :host, :folder, :type].each do |k|
+        repo[k] = @config.repos(k) # looks stupid 
       end
       @package_files[type].each do |p, f|
         puts "Uploading #{f}\t\t[#{p}] to $#{repo[:host]}"
-        command("#{scp} #{Settings.local[:temp]}/#{f} #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}")
+        command("#{scp} #{@config.local(:temp)}/#{f} #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}")
       end
     end
 
-    # @param [Symbol] type
-    def build (type)
-      puts "Building package #{@package} type #{type.to_s}"
-      unless Settings.packages[@package].has_key? type
-        exit! "Package '#{@package}' cannot be built for the required environment"
-      end
+    def build
+      type = @config.type
+      puts "Building package #{@package} type #{type}"
       build = {}
       [:user, :host, :folder, :target].each do |k|
-        unless Settings.build.has_key? k
-          exit! "Undefined key 'build:#{k.to_s}:'"
-        end
-        build[k] = Settings.build[k]
+        build[k] = @config.build(k)
       end
 
-      ssh = Settings.base[:ssh]
-      build_command = Settings.packages[@package][type][:build_command]
-      rsync = Settings.base[:rsync]
-      local_folder = File.expand_path Settings.local[:folder]
-      local_temp = File.expand_path Settings.local[:temp]
+      ssh = @config.base[:ssh]
+      build_command = @config.build(:command)
+      rsync = @config.base(:rsync)
+      local_folder = File.expand_path @config.local(:folder)
+      local_temp = File.expand_path @config.local(:temp)
 
       build_command = build_command.gsub('%f', build[:folder]).
-          gsub('%t', Settings.build[:target]).
+          gsub('%t', @config.build(:target)).
           gsub('%p', @package.to_s).
           gsub('%T', type.to_s)
 
@@ -101,48 +86,43 @@ module Devinstall
       end
     end
 
-    def run_tests(env)
-      # check if we have the test section in the config
-      unless Settings.test
+    def run_tests
+      # check if we have the test section in the configuration file
+      unless @config.test
         puts "No test section in the config file."
         puts "Skipping tests"
         return;
       end
-      # for tests we will use allmost the same setup as for build
+      # for tests we will use almost the same setup as for build
       test = {}
       [:user, :machine, :command, :folder].each do |k|
-        unless Settings.tests[env].has_key? k
-          exit! "Undefined key 'tests:#{env}:#{k.to_s}:'"
-        end
-        test[k] = Settings.tests[env][k]
+        test[k] = @config.(k)
       end
-      ssh = Settings.base[:ssh]
+      ssh = @config.base(:ssh)
       # replace "variables" in commands
       test[:command] = test[:command].
         gsub('%f', test[:folder]). # %f is the folder where the sources are rsync-ed
-        gsub('%t', Settings.build[:target]). # %t is the folder where the build places the result
+        gsub('%t', @config.build(:target)). # %t is the folder where the build places the result
         gsub('%p', @package.to_s) # %p is the package name
       # take the sources from the local folder
-      local_folder = File.expand_path Settings.local[:folder]
+      local_folder = File.expand_path @config.local(:folder)
       # upload them to the test machine
       upload_sources("#{local_folder}/", "#{test[:user]}@#{test[:machine]}:#{test[:folder]}")
-      puts "Running all tests for the #{env} environment"
+      puts "Running all tests"
       puts 'This will take some time and you have no output'
       command("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
     end
 
-    def install (env)
+    def install
+	  env = @config.env
       puts "Installing #{@package} in #{env} environment."
-      local_temp = Settings.local[:temp]
-      sudo = Settings.base[:sudo]
-      scp = Settings.base[:scp]
-      type = Settings.install[:environments][env][:type].to_sym
+      local_temp = @config.local[:temp]
+      sudo = @config.base(:sudo)
+      scp = @config.base(:scp)
+      type = @config.type
       install = {}
       [:user, :host, :folder].each do |k|
-        unless Settings.install[:environments][env].has_key? k
-          exit! "Undefined key 'install:#{env.to_s}:#{k.to_s}'"
-        end
-        install[k] = Settings.install[:environments][env][k]
+        install[k] = @config.install(k)
       end
       install[:host] = [install[:host]] unless Array === install[:host]
       case type
@@ -157,7 +137,7 @@ module Devinstall
     end
 
     def upload_sources (source, dest)
-      rsync = Settings.base[:rsync]
+      rsync = @config.base(:rsync)
       command("#{rsync} -az #{source} #{dest}")
     end
   end

@@ -34,28 +34,25 @@ install:
 # host - dev/prod deploy and install host
 # user - for scp / ssh / rsync  (defaults to base[user])
 # environment - live/qa/dev/...
-  user: dboca
-  environments:
-    dev:
-      host:
-        - server1.lan
-        - server2.lan
-      folder: /home/dboca ## folder for scp/dpkg -i
-      user: dboca
-      type: deb
-      arch: all
+  dev:
+    user: dboca
+    host:
+      - server1.lan
+      - server2.lan
+    folder: /home/dboca ## folder for scp/dpkg -i
+    type: deb
+    arch: all
 repos:
 # for repository deployment
 # in a repository should be all packages for all architectures so we don't have an 'arch:' field
-   environments:
-     dev:
-       type: deb
-       user: dboca
-       host: dboca.repo.lan
-       folder: /srv/repo/incoming
+  dev:
+    user: dboca
+    host: dboca.repo.lan
+    folder: /srv/repo/incoming
+    type: deb
 packages:
   devinstall:
-# might contain all the sections above (local, build, install, repodeploy)
+# might contain all the sections above (local, build, install, repos)
 # type and build_command are mandatory
 # in build_command the folowing expansions are made:
 #  %f build[folder]
@@ -63,4 +60,6 @@ packages:
 #  %p package (current package)
 #  %T type (deb, rpm, tar.gz ,...)
     deb:
-      build_command: "cd %f/%p && dpkg-buildpackage"
+      build:
+        command: "cd %f/%p && dpkg-buildpackage"
+

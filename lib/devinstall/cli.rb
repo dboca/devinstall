@@ -23,7 +23,7 @@ module Devinstall
             ['--dry-run', '-d'],
         )
       rescue
-        puts 'Invalid option in command line'
+        puts 'Invalid option at command line'
         help
       end
       #verbose and dry-run
@@ -33,54 +33,46 @@ module Devinstall
       unless get_config(["./devinstall.yml"])
         exit! 'You must specify the config file'
       end
-      # parse config file
-      Settings.load!(@opt['config'])
-      # complete from default values
-      if Settings.defaults # We have to check for the defaults before (no autovivification :( )
-        %w"package env type".each { |o| @opt[o] ||= Settings.defaults[o.to_sym] if Settings.defaults[o.to_sym] }
-      end
-      # verify all informations
-      if package # a packege was supplied on commandline
-        @opt['package']=[]
-        package.each {|p|  @opt['package'] << p }# this overrides all
-      end
-      %w"package type env".each do |k|
-        unless @opt[k]
-          puts "You must specify option '#{k}' either as default or in command line"
-          help
-        end
+      # add packages
+      if package # a package was supplied on command line
+        @opt['package']=[] # reset the package array because commandline have priority
+        package.each {|p|  @opt['package'] << p }# now this overrides everything
       end
     end
 
     def build
       # create package
       @opt['package'].each do |package|
-        pk=Devinstall::Pkg.new(package)
-        pk.build(@opt['type'].to_sym)
+        config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
+        pk=Devinstall::Pkg.new(package,config)
+        pk.build
       end
     end
 
     def install
       @opt['package'].each do |package|
-        pk=Devinstall::Pkg.new(package)
-        pk.build(@opt['type'].to_sym)
-        pk.install(@opt['env'].to_sym)
+        config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
+        pk=Devinstall::Pkg.new(package,config)
+        pk.build
+        pk.install
       end
     end
 
     def upload
       @opt['package'].each do |package|
-        pk=Devinstall::Pkg.new(package)
-        pk.build(@opt['type'].to_sym)
-        pk.run_tests(@opt['env'].to_sym)
-        pk.upload(@opt['env'].to_sym)
+        config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
+        pk=Devinstall::Pkg.new(package,config)
+        pk.build
+        pk.run_tests
+        pk.upload
       end
     end
 
     def test
       @opt['package'].each do |package|
-        pk=Devinstall::Pkg.new(package)
-        pk.run_tests(@opt['env'].to_sym)
+        config=Devinstall::Settings.new(opt['config'],package, @opt['env'], @opt['type'])
+        pk=Devinstall::Pkg.new(package,config)
+        pk.run_tests
       end
     end
 
