@@ -32,10 +32,11 @@ module Devinstall
     end
 
     # @param [String] package
-    def initialize (package,config)
+    # @param [String] config
+    def initialize (config)
       @config=config #class variable,first thing!
       # currently implemented only for .deb packages (for .rpm later :D)
-      @package = package.to_sym
+      @package = @config.pkg.to_sym
       @_package_version = {} # versions for types:
       @package_files = {}
       arch = @config.build(:arch)

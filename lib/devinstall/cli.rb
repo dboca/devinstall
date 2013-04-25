@@ -44,7 +44,7 @@ module Devinstall
       # create package
       @opt['package'].each do |package|
         config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(package, config)
+        pk=Devinstall::Pkg.new(config)
         pk.build
       end
     end
@@ -52,7 +52,7 @@ module Devinstall
     def install
       @opt['package'].each do |package|
         config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(package, config)
+        pk=Devinstall::Pkg.new(config)
         pk.build
         pk.install
       end
@@ -61,7 +61,7 @@ module Devinstall
     def upload
       @opt['package'].each do |package|
         config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(package, config)
+        pk=Devinstall::Pkg.new(config)
         pk.build
         pk.run_tests
         pk.upload
@@ -71,7 +71,7 @@ module Devinstall
     def test
       @opt['package'].each do |package|
         config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(package, config)
+        pk=Devinstall::Pkg.new(config)
         pk.run_tests
       end
     end
