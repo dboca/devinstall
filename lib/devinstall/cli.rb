@@ -28,7 +28,7 @@ module Devinstall
       end
       #verbose and dry-run
       $verbose ||= @opt['verbose']
-      $dry     ||= @opt['dry-run']
+      $dry ||= @opt['dry-run']
       # get config file
       unless get_config(["./devinstall.yml"])
         exit! 'You must specify the config file'
@@ -36,7 +36,7 @@ module Devinstall
       # add packages
       if package # a package was supplied on command line
         @opt['package']=[] # reset the package array because commandline have priority
-        package.each {|p|  @opt['package'] << p }# now this overrides everything
+        package.each { |p| @opt['package'] << p } # now this overrides everything
       end
     end
 
@@ -44,7 +44,7 @@ module Devinstall
       # create package
       @opt['package'].each do |package|
         config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(package,config)
+        pk=Devinstall::Pkg.new(package, config)
         pk.build
       end
     end
@@ -52,7 +52,7 @@ module Devinstall
     def install
       @opt['package'].each do |package|
         config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(package,config)
+        pk=Devinstall::Pkg.new(package, config)
         pk.build
         pk.install
       end
@@ -61,7 +61,7 @@ module Devinstall
     def upload
       @opt['package'].each do |package|
         config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(package,config)
+        pk=Devinstall::Pkg.new(package, config)
         pk.build
         pk.run_tests
         pk.upload
@@ -70,8 +70,8 @@ module Devinstall
 
     def test
       @opt['package'].each do |package|
-        config=Devinstall::Settings.new(opt['config'],package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(package,config)
+        config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
+        pk=Devinstall::Pkg.new(package, config)
         pk.run_tests
       end
     end

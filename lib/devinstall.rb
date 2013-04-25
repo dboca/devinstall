@@ -10,7 +10,6 @@ module Devinstall
 
     include Utils
 
-    # @param [Symbol] type
     def get_version
       case @config.type
         when :deb
