@@ -1,3 +1,3 @@
 module Devinstall
-  VERSION = '0.2.7' # Small bugfixes
+  VERSION = '0.2.8' # Changed Setup
 end

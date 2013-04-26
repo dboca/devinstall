@@ -29,10 +29,6 @@ module Devinstall
       #verbose and dry-run
       $verbose ||= @opt['verbose']
       $dry ||= @opt['dry-run']
-      # get config file
-      unless get_config(["./devinstall.yml"])
-        exit! 'You must specify the config file'
-      end
       # add packages
       if package # a package was supplied on command line
         @opt['package']=[] # reset the package array because commandline have priority
@@ -41,17 +37,27 @@ module Devinstall
     end
 
     def build
+      # get config file
+      unless get_config(["./devinstall.yml"])
+        exit! 'You must specify the config file'
+      end
       # create package
-      @opt['package'].each do |package|
-        config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(config)
-        pk.build
+      if @opt['package'].empty?
+        Devinstall::Pkg.new(Devinstall::Settings.new(@opt['config'], nil, @opt['type'])).build
+      else
+        @opt['package'].each do |package|
+          Devinstall::Pkg.new(Devinstall::Settings.new(@opt['config'], package, @opt['env'], @opt['type'])).build
+        end
       end
     end
 
     def install
+      # get config file
+      unless get_config(["./devinstall.yml"])
+        exit! 'You must specify the config file'
+      end
       @opt['package'].each do |package|
-        config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
+        config=Devinstall::Settings.new(@opt['config'], package, @opt['env'], @opt['type'])
         pk=Devinstall::Pkg.new(config)
         pk.build
         pk.install
@@ -59,8 +65,12 @@ module Devinstall
     end
 
     def upload
+      # get config file
+      unless get_config(["./devinstall.yml"])
+        exit! 'You must specify the config file'
+      end
       @opt['package'].each do |package|
-        config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
+        config=Devinstall::Settings.new(@opt['config'], package, @opt['env'], @opt['type'])
         pk=Devinstall::Pkg.new(config)
         pk.build
         pk.run_tests
@@ -69,8 +79,12 @@ module Devinstall
     end
 
     def test
+      # get config file
+      unless get_config(["./devinstall.yml"])
+        exit! 'You must specify the config file'
+      end
       @opt['package'].each do |package|
-        config=Devinstall::Settings.new(opt['config'], package, @opt['env'], @opt['type'])
+        config=Devinstall::Settings.new(@opt['config'], package, @opt['env'], @opt['type'])
         pk=Devinstall::Pkg.new(config)
         pk.run_tests
       end
@@ -80,13 +94,13 @@ module Devinstall
       puts 'Usage:'
       puts 'pkg-tool command [package_name ... ] --config|-c <file>  --type|-t <package_type> --env|-e <environment>'
       puts 'where command is one of the: build, install, upload, help, version'
-      exit! 0
+      exit! ""
     end
 
     def version
       puts "devinstall version #{Devinstall::VERSION}"
       puts "pkg-tool version   #{Devinstall::VERSION}"
-      exit! 0
+      exit! ""
     end
 
   end

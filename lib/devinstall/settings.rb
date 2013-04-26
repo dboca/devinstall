@@ -11,7 +11,7 @@ module Devinstall
   class UnknownKeyError < RuntimeError; end
 
   class Settings
-    include "Devinstall/Utils"
+    include Utils
     attr_accessor :pkg, :env, :type
 
     def initialize (filename, pkg = nil, env = nil, type = nil)
@@ -40,7 +40,7 @@ module Devinstall
         puts "Unable to find config file \"#{filename}\""
         exit!
       end
-      unless @@_files.contains? filename
+      unless @@_files.include? filename
         @@_files << filename
         newsets = YAML::load_file(filename).deep_symbolize
         deep_merge!(@@_settings, newsets)
@@ -54,18 +54,19 @@ module Devinstall
       target.merge! data, &merger
     end
 
-    def defaults(key)
-      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:package, :type, :env].contains? key
+    def defaults(key=nil)
+      return @_settings.has_key? :defaults if key.nil?
+      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:package, :type, :env].include? key
       @_settings[:defaults][key].to_sym or raise KeyNotDefinedError, "Undefined key :default:#{key.to_s}"
     end
 
     def base(key)
-      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:rsync, :ssh, :sudo, :scp].contains? key
+      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:rsync, :ssh, :sudo, :scp].include? key
       @_settings[:base][key] or raise KeyNotDefinedError, "Undefined key :base:#{key.to_s}"
     end
 
     def local(key)
-      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:folder, :temp].contains? key
+      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:folder, :temp].include? key
       ret=@_settings[:local][key]
       if @_settings[:packages].has_key? :local
         ret = @settings[:packages][:local][key] || ret
@@ -74,7 +75,7 @@ module Devinstall
     end
 
     def build(key)
-      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:user, :host, :folder, :target, :arch, :command].contains? key
+      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:user, :host, :folder, :target, :arch, :command].include? key
       ret=@_settings[:build][key]
       if @_settings[:packages].has_key? :local
         ret = @settings[:packages][self.type][:build][key] || ret
@@ -83,7 +84,7 @@ module Devinstall
     end
 
     def install(key)
-      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:user, :host, :folder, :type, :arch].contains? key
+      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:user, :host, :folder, :type, :arch].include? key
       ret=@_settings[:install][self.env][key]
       if @_settings[:packages].has_key? :install and @_settings[:packages][:install].has_key? self.env
         ret = @settings[:packages][:install][self.env][key] || ret
@@ -91,8 +92,9 @@ module Devinstall
       ret or raise KeyNotDefinedError, "Undefined key :install:#{self.env.to_s}:#{key} or :#{self.pkg}:install:#{self.env.to_s}:#{key}"
     end
 
-    def tests(key) # tests don't have 'env'
-      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:machine, :folder, :user, :command].contains? key
+    def tests(key=nil) # tests don't have 'env'
+      return @_settings.has_key?(:tests) if key.nil?
+      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:machine, :folder, :user, :command].include? key
       ret=@_settings[:tests][key]
       if @_settings[:packages].has_key? :tests
         ret = @settings[:packages][:tests][key] || ret
@@ -101,7 +103,7 @@ module Devinstall
     end
 
     def repos(key)
-      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:user, :host, :folder, :type, :arch].contains? key
+      raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:user, :host, :folder, :type, :arch].include? key
       ret=@_settings[:repos][self.env][key]
       if @_settings[:packages].has_key? :repos and @_settings[:packages][:repos].has_key? self.env
         ret = @settings[:packages][:repos][self.env][key] || ret

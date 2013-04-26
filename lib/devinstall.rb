@@ -88,7 +88,7 @@ module Devinstall
 
     def run_tests
       # check if we have the test section in the configuration file
-      unless @config.test
+      unless @config.tests
         puts "No test section in the config file."
         puts "Skipping tests"
         return;

@@ -4,7 +4,7 @@ require 'devinstall/cli'
 
 unless ARGV[0]
   puts "You must specify an action"
-  exit! 1
+  exit! ""
 end
 
 package = [] # creata a new Array
