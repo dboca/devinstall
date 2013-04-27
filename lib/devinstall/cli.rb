@@ -29,44 +29,44 @@ module Devinstall
       #verbose and dry-run
       $verbose ||= @opt['verbose']
       $dry ||= @opt['dry-run']
+      # get config file
+      get_config(["./devinstall.yml", "~/.devinstall.yml"])
       # add packages
+      @opt['package']=[] # reset the package array because commandline have priority
       if package # a package was supplied on command line
-        @opt['package']=[] # reset the package array because commandline have priority
         package.each { |p| @opt['package'] << p } # now this overrides everything
+      end
+      #get default packages
+      if @opt['package'].empty?
+        config = Devinstall::Settings.new(@opt['config'], nil, @opt['env'], @opt['type']) # Just for pkg :D
+        @opt['package'] = config.pkg # we DO have accessor
       end
     end
 
     def build
-      # get config file
-      unless get_config(["./devinstall.yml"])
+      if @opt['config'].empty?
         exit! 'You must specify the config file'
       end
       # create package
-      if @opt['package'].empty?
-        Devinstall::Pkg.new(Devinstall::Settings.new(@opt['config'], nil, @opt['type'])).build
-      else
-        @opt['package'].each do |package|
-          Devinstall::Pkg.new(Devinstall::Settings.new(@opt['config'], package, @opt['env'], @opt['type'])).build
-        end
+      @opt['package'].each do |package|
+        pk=Devinstall::Pkg.new(Devinstall::Settings.new(@opt['config'], package, @opt['env'], @opt['type']))
+        pk.build
       end
     end
 
     def install
-      # get config file
-      unless get_config(["./devinstall.yml"])
+      if @opt['config'].empty?
         exit! 'You must specify the config file'
       end
       @opt['package'].each do |package|
-        config=Devinstall::Settings.new(@opt['config'], package, @opt['env'], @opt['type'])
-        pk=Devinstall::Pkg.new(config)
+        pk=Devinstall::Pkg.new(Devinstall::Settings.new(@opt['config'], package, @opt['env'], @opt['type']))
         pk.build
         pk.install
       end
     end
 
     def upload
-      # get config file
-      unless get_config(["./devinstall.yml"])
+      if @opt['config'].empty?
         exit! 'You must specify the config file'
       end
       @opt['package'].each do |package|
@@ -79,8 +79,7 @@ module Devinstall
     end
 
     def test
-      # get config file
-      unless get_config(["./devinstall.yml"])
+      if @opt['config'].empty?
         exit! 'You must specify the config file'
       end
       @opt['package'].each do |package|

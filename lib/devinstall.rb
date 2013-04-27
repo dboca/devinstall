@@ -36,11 +36,11 @@ module Devinstall
     def initialize (config)
       @config=config #class variable,first thing!
       # currently implemented only for .deb packages (for .rpm later :D)
-      @package = @config.pkg.to_sym
+      @package = @config.pkg.to_sym 
       @_package_version = {} # versions for types:
       @package_files = {}
       arch = @config.build(:arch)
-      p_name = "#{package}_#{get_version}"
+      p_name = "#{@package}_#{get_version}"
       @package_files[:deb] = {deb: "#{p_name}_#{arch}.deb",
                               tgz: "#{p_name}.tar.gz",
                               dsc: "#{p_name}.dsc",
@@ -67,7 +67,7 @@ module Devinstall
         build[k] = @config.build(k)
       end
 
-      ssh = @config.base[:ssh]
+      ssh = @config.base(:ssh)
       build_command = @config.build(:command)
       rsync = @config.base(:rsync)
       local_folder = File.expand_path @config.local(:folder)
@@ -83,6 +83,29 @@ module Devinstall
       @package_files[type].each do |p, t|
         puts "Receiving target #{p.to_s} for #{t.to_s}"
         command("#{rsync} -az #{build[:user]}@#{build[:host]}:#{build[:target]}/#{t} #{local_temp}")
+      end
+    end
+
+    def install
+      env = @config.env
+      puts "Installing #{@package} in #{env} environment."
+      local_temp = @config.local(:temp)
+      sudo = @config.base(:sudo)
+      scp = @config.base(:scp)
+      type = @config.type
+      install = {}
+      [:user, :host, :folder].each do |k|
+        install[k] = @config.install(k)
+      end
+      install[:host] = [install[:host]] unless Array === install[:host]
+      case type
+        when :deb
+          install[:host].each do |host|
+            command("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{host}:#{install[:folder]}")
+            command("#{sudo} #{install[:user]}@#{host} /usr/bin/dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
+          end
+        else
+          exit! "unknown package type '#{type.to_s}'"
       end
     end
 
@@ -111,29 +134,6 @@ module Devinstall
       puts "Running all tests"
       puts 'This will take some time and you have no output'
       command("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
-    end
-
-    def install
-	  env = @config.env
-      puts "Installing #{@package} in #{env} environment."
-      local_temp = @config.local[:temp]
-      sudo = @config.base(:sudo)
-      scp = @config.base(:scp)
-      type = @config.type
-      install = {}
-      [:user, :host, :folder].each do |k|
-        install[k] = @config.install(k)
-      end
-      install[:host] = [install[:host]] unless Array === install[:host]
-      case type
-        when :deb
-          install[:host].each do |host|
-            command("#{scp} #{local_temp}/#{@package_files[type][:deb]} #{install[:user]}@#{host}:#{install[:folder]}")
-            command("#{sudo} #{install[:user]}@#{host} /usr/bin/dpkg -i #{install[:folder]}/#{@package_files[type][:deb]}")
-          end
-        else
-          exit! "unknown package type '#{type.to_s}'"
-      end
     end
 
     def upload_sources (source, dest)

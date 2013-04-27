@@ -18,17 +18,24 @@ module Devinstall
       @@_files ||= []
       @@_settings ||= {}
       load! filename
-      self.pkg = pkg ? pkg.to_sym : defaults(:package)
-      self.env = env ? env.to_sym : defaults(:env)
-      self.type = type ? type.to_sym : defaults(:type)
-      raise KeyNotDefinedError, "Package '#{pkg}' not defined" unless @_settings[:packages].has_key? pkg
-      raise KeyNotDefinedError, "Package type '#{type}' not defined " unless @_settings[:packages][pkg].has_key? type
-      raise KeyNotDefinedError, "Missing package" unless pkg
-      raise KeyNotDefinedError, "Missing environment" unless env
-      raise KeyNotDefinedError, "Missing package type" unless type
+      self.pkg = pkg ? pkg : defaults(:package)
+      self.env = env ? env.to_sym : defaults(:env).to_sym
+      self.type = type ? type.to_sym : defaults(:type).to_sym
+      if Array === self.pkg
+        self.pkg.each do |p|
+          raise KeyNotDefinedError, "Package '#{p}' not defined"               unless @@_settings[:packages].has_key? p.to_sym
+          raise KeyNotDefinedError, "Package #{p} type '#{type}' not defined " unless @@_settings[:packages][p.to_sym].has_key? self.type
+        end
+      else
+        raise KeyNotDefinedError, "Package '#{p}' not defined"               unless @@_settings[:packages].has_key? self.pkg.to_sym
+        raise KeyNotDefinedError, "Package #{p} type '#{type}' not defined " unless @@_settings[:packages][self.pkg.to_sym].has_key? self.type
+      end
+      raise KeyNotDefinedError, "Missing package" unless self.pkg
+      raise KeyNotDefinedError, "Missing environment" unless self.env
+      raise KeyNotDefinedError, "Missing package type" unless self.type
     rescue KeyNotDefinedError => e
       puts "#{e.message}"
-      exit! #here should be raise
+      exit! "" #here should be raise
     rescue UnknownKeyError => e
       puts "Program error: #{e.message} at:"
       puts e.backtrace
@@ -55,69 +62,69 @@ module Devinstall
     end
 
     def defaults(key=nil)
-      return @_settings.has_key? :defaults if key.nil?
+      return @@_settings.has_key? :defaults if key.nil?
       raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:package, :type, :env].include? key
-      @_settings[:defaults][key].to_sym or raise KeyNotDefinedError, "Undefined key :default:#{key.to_s}"
+      @@_settings[:defaults][key] or raise KeyNotDefinedError, "Undefined key :default:#{key.to_s}"
     end
 
-    def base(key)
+    def base(key=nil)
+      return @@_settings.has_key? :base if key.nil?
       raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:rsync, :ssh, :sudo, :scp].include? key
-      @_settings[:base][key] or raise KeyNotDefinedError, "Undefined key :base:#{key.to_s}"
+      @@_settings[:base][key] or raise KeyNotDefinedError, "Undefined key :base:#{key.to_s}"
     end
 
     def local(key)
       raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:folder, :temp].include? key
-      ret=@_settings[:local][key]
-      if @_settings[:packages].has_key? :local
-        ret = @settings[:packages][:local][key] || ret
+      ret=@@_settings[:local][key]
+      if @@_settings[:packages][self.pkg.to_sym][self.type].has_key? :local
+        ret = @@_settings[:packages][self.pgk.to_sym][self.type][:local][key] || ret
       end
       ret or raise KeyNotDefinedError, "Undefined key :local:#{key} or :#{self.pkg}:local:#{key}"
     end
 
     def build(key)
       raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:user, :host, :folder, :target, :arch, :command].include? key
-      ret=@_settings[:build][key]
-      if @_settings[:packages].has_key? :local
-        ret = @settings[:packages][self.type][:build][key] || ret
+      ret=@@_settings[:build][key]
+      if @@_settings[:packages][self.pkg.to_sym][self.type].has_key? :build
+        ret = @@_settings[:packages][self.pkg.to_sym][self.type][:build][key] || ret
       end
-      ret or raise KeyNotDefinedError, "Undefined key :build:#{key} or :#{self.pkg}:build:#{key}"
+      ret or raise KeyNotDefinedError, "Undefined key :build:#{key} or :#{self.pkg}:#{self.type}:build:#{key}"
     end
 
     def install(key)
       raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:user, :host, :folder, :type, :arch].include? key
-      ret=@_settings[:install][self.env][key]
-      if @_settings[:packages].has_key? :install and @_settings[:packages][:install].has_key? self.env
-        ret = @settings[:packages][:install][self.env][key] || ret
+      ret=@@_settings[:install][self.env][key]
+      if @@_settings[:packages][self.pkg.to_sym][self.type].has_key? :install and @@_settings[:packages][:install].has_key? self.env
+        ret = @@_settings[:packages][self.pgk.to_sym][self.type][:install][self.env][key] || ret
       end
       ret or raise KeyNotDefinedError, "Undefined key :install:#{self.env.to_s}:#{key} or :#{self.pkg}:install:#{self.env.to_s}:#{key}"
     end
 
     def tests(key=nil) # tests don't have 'env'
-      return @_settings.has_key?(:tests) if key.nil?
+      return @@_settings.has_key?(:tests) if key.nil?
       raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:machine, :folder, :user, :command].include? key
-      ret=@_settings[:tests][key]
-      if @_settings[:packages].has_key? :tests
-        ret = @settings[:packages][:tests][key] || ret
+      ret=@@_settings[:tests][key]
+      if @@_settings[:packages][self.pkg.to_sym][self.type].has_key? :tests
+        ret = @@_settings[:packages][self.pkg.to_sym][self.type][:tests][key] || ret
       end
       ret or raise KeyNotDefinedError, "Undefined key :tests:#{self.env.to_s}:#{key} or :#{self.pkg}:tests:#{self.env.to_s}:#{key}"
     end
 
     def repos(key)
       raise UnknownKeyError, "Don't know what are you asking about: '#{key}'" unless [:user, :host, :folder, :type, :arch].include? key
-      ret=@_settings[:repos][self.env][key]
-      if @_settings[:packages].has_key? :repos and @_settings[:packages][:repos].has_key? self.env
-        ret = @settings[:packages][:repos][self.env][key] || ret
+      ret=@@_settings[:repos][self.env][key]
+      if @@_settings[:packages][self.pkg.to_sym][self.type].has_key? :repos and @@_settings[:packages][:repos].has_key? self.env
+        ret = @@_settings[:packages][self.pkg.to_sym][self.type][:repos][self.env][key] || ret
       end
       ret or raise KeyNotDefinedError, "Undefined key :repos:environments:#{self.env.to_s}:#{key} or :#{self.pkg}:repos:#{self.env.to_s}:#{key}"
     end
 
     %w(repos packages).each do |m|
       define_method(m) do
-        @_settings[m.to_sym]
+        @@_settings[m.to_sym]
       end
     end
 
   end
 end
-
 
