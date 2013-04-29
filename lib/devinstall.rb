@@ -36,7 +36,7 @@ module Devinstall
     def initialize (config)
       @config=config #class variable,first thing!
       # currently implemented only for .deb packages (for .rpm later :D)
-      @package = @config.pkg.to_sym 
+      @package = @config.pkg.to_sym
       @_package_version = {} # versions for types:
       @package_files = {}
       arch = @config.build(:arch)
@@ -51,7 +51,7 @@ module Devinstall
       scp = @config.base(:scp)
       repo = {}
       [:user, :host, :folder, :type].each do |k|
-        repo[k] = @config.repos(k) # looks stupid 
+        repo[k] = @config.repos(k) # looks stupid
       end
       @package_files[type].each do |p, f|
         puts "Uploading #{f}\t\t[#{p}] to $#{repo[:host]}"
@@ -119,7 +119,7 @@ module Devinstall
       # for tests we will use almost the same setup as for build
       test = {}
       [:user, :machine, :command, :folder].each do |k|
-        test[k] = @config.(k)
+        test[k] = @config.tests(k)
       end
       ssh = @config.base(:ssh)
       # replace "variables" in commands
