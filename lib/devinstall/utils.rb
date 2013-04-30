@@ -1,10 +1,13 @@
 module Utils
+  class CommandError < StandardError
+    attr_accessor :command_output, :return_code
+  end
 
   def command(cmd)
     puts cmd if $verbose
     ret=''
     unless $dry
-      ret = `#{cmd}` unless $dry
+      ret = `#{cmd}`
       if $?.exitstatus != 0 ## return failure
         puts "While executing:"
         puts cmd
@@ -14,7 +17,7 @@ module Utils
         puts ret
         puts "="*40
         puts "Nothing to do. Aborting!"
-        exit! "Done"
+        raise  CommandError("Error running").command_output(ret).return_code($?.exitstatus)
       end
     end
     ret
