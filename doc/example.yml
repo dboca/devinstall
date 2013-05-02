@@ -1,8 +1,15 @@
 base:
   rsync: /usr/bin/rsync
-  ssh: /usr/bin/ssh
   scp: /usr/bin/scp
   sudo: sshsudo
+  ssh: /usr/bin/ssh
+  provider: ## NOT YET Implemented!
+    vagrant1:
+      init: vagrant up
+      destroy: vagrant destroy
+    openstack1:
+      node: node.dev.local
+      arch: debian64
 defaults:
   package: devinstall
   env: dev
@@ -25,6 +32,9 @@ build:
 # target - the folder where packages will be generated (defaults to folder)
 # user - for ssh / rsync
 # arch is the architecture for the generated package (like amd64 or i686)
+# provider can be ssh or local (in the future vagrant and openstack)
+# note: the ssh in provider have nothing to do with ssh command in base
+  provider: ssh
   user: dboca
   host: vm-dboca.dev.local
   folder: rs
@@ -35,6 +45,7 @@ install:
 # user - for scp / ssh / rsync  (defaults to base[user])
 # environment - live/qa/dev/...
   dev:
+    provider: ssh  
     user: dboca
     host:
       - server1.lan

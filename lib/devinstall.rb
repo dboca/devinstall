@@ -57,6 +57,12 @@ module Devinstall
         puts "Uploading #{f}\t\t[#{p}] to $#{repo[:host]}"
         command("#{scp} #{@config.local(:temp)}/#{f} #{repo[:user]}@#{repo[:host]}:#{repo[:folder]}")
       end
+    rescue CommandError => e
+      puts e.verbose_message
+      exit! ""
+    rescue KeyNotdefinederror => e
+      puts e.message
+      exit! ""
     end
 
     def build
@@ -84,6 +90,12 @@ module Devinstall
         puts "Receiving target #{p.to_s} for #{t.to_s}"
         command("#{rsync} -az #{build[:user]}@#{build[:host]}:#{build[:target]}/#{t} #{local_temp}")
       end
+    rescue CommandError => e
+      puts e.verbose_message
+      exit! ""
+    rescue KeyNotdefinederror => e
+      puts e.message
+      exit! ""
     end
 
     def install
@@ -107,6 +119,12 @@ module Devinstall
         else
           exit! "unknown package type '#{type.to_s}'"
       end
+    rescue CommandError => e
+      puts e.verbose_message
+      exit! ""
+    rescue KeyNotdefinederror => e
+      puts e.message
+      exit! ""
     end
 
     def run_tests
@@ -140,6 +158,12 @@ module Devinstall
       rsync = @config.base(:rsync)
       command("#{rsync} -az #{source} #{dest}")
     end
+    rescue CommandError => e
+      puts e.verbose_message
+      exit! ""
+    rescue KeyNotdefinederror => e
+      puts e.message
+      exit! ""
   end
 
 end

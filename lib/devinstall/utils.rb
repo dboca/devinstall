@@ -1,6 +1,15 @@
 module Utils
-  class CommandError < StandardError
+  class CommandError < RuntimeError
     attr_accessor :command_output, :return_code
+    def verbose_message
+      if $verbose
+        puts self.message
+        puts "#"*20
+        puts self.command_output
+        puts "#"*20
+        puts "Exit code: #{self.return_code}"
+      end
+    end
   end
 
   def command(cmd)
@@ -9,15 +18,10 @@ module Utils
     unless $dry
       ret = `#{cmd}`
       if $?.exitstatus != 0 ## return failure
-        puts "While executing:"
-        puts cmd
-        puts "The command failed with exitstatus #{$?.exitstatus}"
-        puts "Full output of command follows"
-        puts "="*40
-        puts ret
-        puts "="*40
-        puts "Nothing to do. Aborting!"
-        raise  CommandError("Error running").command_output(ret).return_code($?.exitstatus)
+        err=CommandError.new "ErrorRunning #{cmd}"
+        err.command_output = ret
+        err.return_code = $?.exitstatus
+        raise err
       end
     end
     ret
@@ -27,6 +31,5 @@ module Utils
     puts msg || "Aborting!"
     Kernel.exit 1
   end
-
 
 end #module

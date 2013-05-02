@@ -37,6 +37,9 @@ module Devinstall
         package.each { |p| @opt['package'] << p } # now this overrides everything
       end
       #get default packages
+      if !@opt.has_key? "config" or @opt['config'].nil? or @opt['config'].empty?
+        exit! "No default config file and no --config option at commandline!"
+      end
       if @opt['package'].empty?
         config = Devinstall::Settings.new(@opt['config'], nil, @opt['env'], @opt['type']) # Just for pkg :D
         @opt['package'] = config.pkg # we DO have accessor
