@@ -1,12 +1,13 @@
 module Utils
   class CommandError < RuntimeError
     attr_accessor :command_output, :return_code
+
     def verbose_message
       if $verbose
         puts self.message
-        puts "#"*20
+        puts '#'*20
         puts self.command_output
-        puts "#"*20
+        puts '#'*20
         puts "Exit code: #{self.return_code}"
       end
     end
@@ -27,8 +28,8 @@ module Utils
     ret
   end
 
-  def exit! msg
-    puts msg || "Aborting!"
+  def exit!(msg=nil)
+    puts msg || 'Aborting!'
     Kernel.exit 1
   end
 

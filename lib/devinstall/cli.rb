@@ -18,11 +18,11 @@ module Devinstall
     def initialize(*package)
       begin
         opt = Getopt::Long.getopts(
-            ['--config', '-c', Getopt::REQUIRED],
-            ['--type', '-t', Getopt::REQUIRED],
-            ['--env', '-e', Getopt::REQUIRED],
-            ['--verbose', '-v'],
-            ['--dry-run', '-d'],
+            %w(--config -c),
+            %w(--type -t),
+            %w(--env -e),
+            %w(--verbose -v),
+            %w(--dry-run -d),
         )
       rescue
         puts 'Invalid option at command line'
@@ -33,12 +33,12 @@ module Devinstall
       $dry ||= opt['dry-run']
       # get config file
       config = Devinstall::Settings.instance # is a singleton so we don't use new here
-      cfgfile = get_config("./devinstall.yml", "~/.devinstall.yml", opt['config'])
+      cfgfile = get_config('./devinstall.yml', '~/.devinstall.yml', opt['config'])
       exit! 'You must specify the config file' if cfgfile.empty?
       config.load! cfgfile # load cfgfile
-      config.env  = opt['env']  || config.env
+      config.env = opt['env'] || config.env
       config.type = opt['type'] || config.type
-      @packages = package
+      @packages = package || []
       @packages = config.defaults(:package) if @packages.empty?
       exit! 'You must ask for a package' if @packages.empty?
       config.validate
@@ -54,7 +54,6 @@ module Devinstall
     end
 
     def install
-      config=Devinstall::Settings.instance
       @packages.each do |package|
         pk=Devinstall::Pkg.new(package)
         pk.build
@@ -63,7 +62,6 @@ module Devinstall
     end
 
     def upload
-      config=Devinstall::Settings.instance
       @packages.each do |package|
         pk=Devinstall::Pkg.new(package)
         pk.build
@@ -73,7 +71,6 @@ module Devinstall
     end
 
     def test
-      config=Devinstall::Settings.instance
       @packages.each do |package|
         pk=Devinstall::Pkg.new(package)
         pk.run_tests
@@ -84,13 +81,13 @@ module Devinstall
       puts 'Usage:'
       puts 'pkg-tool command [package_name ... ] --config|-c <file>  --type|-t <package_type> --env|-e <environment>'
       puts 'where command is one of the: build, install, upload, help, version'
-      exit! ""
+      exit! ''
     end
 
     def version
       puts "devinstall version #{Devinstall::VERSION}"
       puts "pkg-tool version   #{Devinstall::VERSION}"
-      exit! ""
+      exit! ''
     end
 
   end

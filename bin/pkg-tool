@@ -4,8 +4,8 @@ require 'bundler/setup'
 require 'devinstall/cli'
 
 unless ARGV[0]
-  puts "You must specify an action"
-  exit! ""
+  puts 'You must specify an action'
+  exit! ''
 end
 
 package = [] # creata a new Array

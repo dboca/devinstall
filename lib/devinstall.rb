@@ -35,8 +35,7 @@ module Devinstall
     def initialize(package)
       @config=Settings.instance #class variable,first thing!
       @config.pkg=package # very important!
-      # currently implemented only for .deb packages (for .rpm later :D)
-      @package = package
+      @package = package # currently implemented only for .deb packages (for .rpm later :D)
       @_package_version = {} # versions for types:
       @package_files = {}
       arch = @config.build(:arch)
@@ -59,10 +58,10 @@ module Devinstall
       end
     rescue CommandError => e
       puts e.verbose_message
-      exit! ""
+      exit! ''
     rescue KeyNotdefinederror => e
       puts e.message
-      exit! ""
+      exit! ''
     end
 
     def build
@@ -92,10 +91,10 @@ module Devinstall
       end
     rescue CommandError => e
       puts e.verbose_message
-      exit! ""
+      exit! ''
     rescue KeyNotdefinederror => e
       puts e.message
-      exit! ""
+      exit! ''
     end
 
     def install
@@ -121,18 +120,18 @@ module Devinstall
       end
     rescue CommandError => e
       puts e.verbose_message
-      exit! ""
+      exit! ''
     rescue KeyNotdefinederror => e
       puts e.message
-      exit! ""
+      exit! ''
     end
 
     def run_tests
       # check if we have the test section in the configuration file
       unless @config.tests
-        puts "No test section in the config file."
-        puts "Skipping tests"
-        return;
+        puts 'No test section in the config file.'
+        puts 'Skipping tests'
+        return
       end
       # for tests we will use almost the same setup as for build
       test = {}
@@ -142,14 +141,14 @@ module Devinstall
       ssh = @config.base(:ssh)
       # replace "variables" in commands
       test[:command] = test[:command].
-        gsub('%f', test[:folder]). # %f is the folder where the sources are rsync-ed
-        gsub('%t', @config.build(:target)). # %t is the folder where the build places the result
-        gsub('%p', @package.to_s) # %p is the package name
+          gsub('%f', test[:folder]).# %f is the folder where the sources are rsync-ed
+          gsub('%t', @config.build(:target)).# %t is the folder where the build places the result
+          gsub('%p', @package.to_s) # %p is the package name
       # take the sources from the local folder
       local_folder = File.expand_path @config.local(:folder)
       # upload them to the test machine
       upload_sources("#{local_folder}/", "#{test[:user]}@#{test[:machine]}:#{test[:folder]}")
-      puts "Running all tests"
+      puts 'Running all tests'
       puts 'This will take some time and you have no output'
       command("#{ssh} #{test[:user]}@#{test[:machine]} \"#{test[:command]}\"")
     end
@@ -158,12 +157,12 @@ module Devinstall
       rsync = @config.base(:rsync)
       command("#{rsync} -az #{source} #{dest}")
     end
-    rescue CommandError => e
-      puts e.verbose_message
-      exit! ""
-    rescue KeyNotdefinederror => e
-      puts e.message
-      exit! ""
+  rescue CommandError => e
+    puts e.verbose_message
+    exit! ''
+  rescue KeyNotdefinederror => e
+    puts e.message
+    exit! ''
   end
 
 end

@@ -9,9 +9,11 @@ end
 
 module Devinstall
 
-  class KeyNotDefinedError < RuntimeError; end
+  class KeyNotDefinedError < RuntimeError;
+  end
 
-  class UnknownKeyError < RuntimeError; end
+  class UnknownKeyError < RuntimeError;
+  end
 
   class Settings
     include Singleton
@@ -35,16 +37,16 @@ module Devinstall
     end
 
     def validate
-      raise KeyNotDefinedError, "Missing package" unless self.pkg
-      raise KeyNotDefinedError, "Missing environment" unless self.env
-      raise KeyNotDefinedError, "Missing package type" unless self.type
+      raise KeyNotDefinedError, 'Missing package' unless self.pkg
+      raise KeyNotDefinedError, 'Missing environment' unless self.env
+      raise KeyNotDefinedError, 'Missing package type' unless self.type
       if Array === self.pkg
         self.pkg.each do |p|
-          raise KeyNotDefinedError, "Package '#{p}' not defined"               unless SETTINGS[:packages].has_key? p.to_sym
+          raise KeyNotDefinedError, "Package '#{p}' not defined" unless SETTINGS[:packages].has_key? p.to_sym
           raise KeyNotDefinedError, "Package #{p} type '#{type}' not defined " unless SETTINGS[:packages][p.to_sym].has_key? self.type
         end
       else
-        raise KeyNotDefinedError, "Package '#{pkg}' not defined"               unless SETTINGS[:packages].has_key? self.pkg.to_sym
+        raise KeyNotDefinedError, "Package '#{pkg}' not defined" unless SETTINGS[:packages].has_key? self.pkg.to_sym
         raise KeyNotDefinedError, "Package #{pkg} type '#{type}' not defined " unless SETTINGS[:packages][self.pkg.to_sym].has_key? self.type
       end
     rescue KeyNotDefinedError => e
@@ -66,7 +68,7 @@ module Devinstall
         deep_merge!(SETTINGS, newsets)
       end
       ### initialize type, env from defaults unless already defined
-      self.env  ||= defaults(:env).to_sym
+      self.env ||= defaults(:env).to_sym
       self.type ||= defaults(:type).to_sym
     end
 
