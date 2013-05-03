@@ -28,8 +28,8 @@ module Utils
     ret
   end
 
-  def exit!(msg=nil)
-    puts msg || 'Aborting!'
+  def exit!(msg='Aborting')
+    puts msg
     Kernel.exit 1
   end
 

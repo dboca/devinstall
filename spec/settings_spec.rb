@@ -10,9 +10,17 @@ describe 'Settings' do
   type=:deb
   env=nil
 
+  it 'should load an existig file' do
+    expect(config.load!('doc/example.yml')).to be_true
+  end
+
+  it 'should not load an unexisting file' do
+    expect(config.load!('doc/unexisting.yml')).to be_false
+  end
+
   it 'should load at init' do
     expect(config).to be_an_instance_of(Devinstall::Settings)
-    [:defaults, :base, :local, :build, :install, :tests, :packages, :repos].each do |p|
+    [:defaults, :base, :local, :build, :install, :tests, :repos].each do |p|
       expect(config.respond_to? p).to be_true
     end # all sections loaded!
   end

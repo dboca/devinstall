@@ -1,95 +1,94 @@
-require 'devinstall'
+require 'devinstall/pkg'
 require 'getopt/long'
 require 'devinstall/settings'
+require 'commander/import'
 
-module Devinstall
-  class Cli
+module Cli
 
-    include Utils
+  program :name, 'DevInstall'
+  program :version, Devinstall::VERSION
+  program :description, 'Poor man builder/installer'
 
-    def get_config(*fnames)
-      config=nil
-      fnames.each do |f|
-        (config ||= (File.expand_path(f) if File.exist? f)) and break
-      end
-      config
+  global_option('--config FILE' 'Configuration file to be used') do |file|
+    unless Devinstall::Settings.instance.load! file
+      puts "Couldn't find #{file}"
+      exit!
     end
+  end
 
-    def initialize(*package)
-      begin
-        opt = Getopt::Long.getopts(
-            %w(--config -c),
-            %w(--type -t),
-            %w(--env -e),
-            %w(--verbose -v),
-            %w(--dry-run -d),
-        )
-      rescue
-        puts 'Invalid option at command line'
-        help
-      end
-      #verbose and dry-run
-      $verbose ||= opt['verbose']
-      $dry ||= opt['dry-run']
-      # get config file
-      cfgfile = get_config('./devinstall.yml', '~/.devinstall.yml', opt['config'])
-      exit! 'You must specify the config file' if cfgfile.empty?
-      config = Settings.instance # is a singleton so we don't use new here
-      config.load! cfgfile # load cfgfile
-      @env = opt['env']   || config.defaults(:env)
-      @type = opt['type'] || config.defaults(:type)
-      @packages = package || []
-      @packages = config.defaults(:package) if @packages.empty?
-      exit! 'You should ask for a package' if @packages.empty?
-      config.validate
-    rescue KeyNotDefinedError => e
-      exit! e.message
+  global_option('--verbose', 'Verbose output') { $verbose=true }
+  global_option('--dry-run', 'Dry-run; don\'t run commands, just pretend to') { $dry=true }
+  global_option('--type STRING', 'Package type (deb, rpm, tgz). Currently only deb')
+  global_option('--env STRING', 'Package environment to be built for')
+
+  def load_defaults
+    %w(./devinstall.yml ./.devinstall.yml ~/.devinstall).each do |f|
+      Devinstall::Settings.instance.load! f and return true
     end
+    puts "Couldn't find default config file and no --config option given at command line"
+    exit!
+  end
 
-    def build
-      @packages.each do |package|
-        pk=Devinstall::Pkg.new(package,@type, @env)
+  command :build do |c|
+    c.action do |args, options|
+      config=Devinstall::Settings.instance
+      load_defaults unless options.config
+      type = options.type ? options.type.to_sym : config.defaults(:type)
+      env = options.env ? options.env.to_sym : config.defaults(:env)
+
+      args.each do |p|
+        pk=Devinstall::Pkg.new(p, type, env)
         pk.build
       end
     end
+  end
 
-    def install
-      @packages.each do |package|
-        pk=Devinstall::Pkg.new(package, @type, @env)
+  command :install do |c|
+    c.action do |args, options|
+      config=Devinstall::Settings.instance
+      load_defaults unless options.config
+      type = options.type ? options.type.to_sym : config.defaults(:type)
+      env = options.env ? options.env.to_sym : config.defaults(:env)
+
+      args.each do |p|
+        pk=Devinstall::Pkg.new(p, type, env)
         pk.build
         pk.install
       end
     end
+  end
 
-    def upload
-      @packages.each do |package|
-        pk=Devinstall::Pkg.new(package,@type, @env)
+  command :test do |c|
+    c.action do |args, options|
+      config=Devinstall::Settings.instance
+      load_defaults unless options.config
+      type = options.type ? options.type.to_sym : config.defaults(:type)
+      env = options.env ? options.env.to_sym : config.defaults(:env)
+
+      args.each do |p|
+        pk=Devinstall::Pkg.new(p, type, env)
+        pk.run_tests
+      end
+    end
+  end
+
+  command :upload do |c|
+    c.action do |args, options|
+      config=Devinstall::Settings.instance
+      load_defaults unless options.config
+      type = options.type ? options.type.to_sym : config.defaults(:type)
+      env = options.env ? options.env.to_sym : config.defaults(:env)
+
+      args.each do |p|
+        pk=Devinstall::Pkg.new(p, type, env)
         pk.build
         pk.run_tests
         pk.upload
       end
     end
-
-    def test
-      @packages.each do |package|
-        pk=Devinstall::Pkg.new(package, @type, @env)
-        pk.run_tests
-      end
-    end
-
-    def help
-      puts 'Usage:'
-      puts 'pkg-tool command [package_name ... ] --config|-c <file>  --type|-t <package_type> --env|-e <environment>'
-      puts 'where command is one of the: build, install, upload, help, version'
-      exit! ''
-    end
-
-    def version
-      puts "devinstall version #{Devinstall::VERSION}"
-      puts "pkg-tool version   #{Devinstall::VERSION}"
-      exit! ''
-    end
-
   end
+
 end
+
+__END__
 
