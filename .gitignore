@@ -9,7 +9,6 @@ InstalledFiles
 _yardoc
 coverage
 lib/bundler/man
-pkg
 rdoc
 spec/reports
 test/tmp
