@@ -19,6 +19,7 @@ tests:
   dev: 
     machine: dboca.dev.local
     folder: rs
+    target: rs ## this is a new addition
     user: dboca
     command: "cd %f && make devtest"
 local:
@@ -45,7 +46,7 @@ install:
 # user - for scp / ssh / rsync  (defaults to base[user])
 # environment - live/qa/dev/...
   dev:
-    provider: ssh  
+    provider: ssh  ## Not implemented but compulsory for build, install, repos, tests
     user: dboca
     host:
       - server1.lan
@@ -63,8 +64,8 @@ repos:
     type: deb
 packages:
   devinstall:
-# might contain all the sections above (local, build, install, repos)
-# type and build_command are mandatory
+# might contain all the sections above (local, build, install, repos, tests)
+# type:build:command and  type:install:command are mandatory
 # in build_command the folowing expansions are made:
 #  %f build[folder]
 #  %t build[target]
@@ -73,4 +74,6 @@ packages:
     deb:
       build:
         command: "cd %f/%p && dpkg-buildpackage"
+      install:
+        command: "dpkg -i"
 
