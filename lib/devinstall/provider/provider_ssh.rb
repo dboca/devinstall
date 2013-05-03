@@ -1,6 +1,6 @@
 require 'devinstall/utils'
 module Provider
-  module SSH
+  module Ssh
     include Devinstall::Utils
 
     def upload_sources(cfg, src, dst)
