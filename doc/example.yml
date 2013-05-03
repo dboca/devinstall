@@ -12,7 +12,7 @@ base:
       arch: debian64
 defaults:
   package: devinstall
-  env: dev
+#  env: dev
   type: deb
 tests:
 # dev is the environment

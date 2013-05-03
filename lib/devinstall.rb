@@ -32,9 +32,11 @@ module Devinstall
     end
 
     # @param [String] package
-    def initialize(package)
+    def initialize(package, type, env)
       @config=Settings.instance #class variable,first thing!
       @config.pkg=package # very important!
+      @type=type
+      @env=env
       @package = package # currently implemented only for .deb packages (for .rpm later :D)
       @_package_version = {} # versions for types:
       @package_files = {}
@@ -64,23 +66,21 @@ module Devinstall
       exit! ''
     end
 
-    def build
-      type = @config.type
-      puts "Building package #{@package} type #{type}"
-      build = {}
-      [:user, :host, :folder, :target].each do |k|
-        build[k] = @config.build(k)
-      end
+    def build(pkg=@package, type=@type, env=@env)
+      config = Settings.instance
+      puts "Building package #{pkg} type #{type}"
+      build=config.build(pkg:pkg, type:type, env:env)
+      local=config.local(pkg:pkg, type:type, env:env)
+      raise 'Invaild build configuration' unless build.valid?
 
       ssh = @config.base(:ssh)
-      build_command = @config.build(:command)
       rsync = @config.base(:rsync)
-      local_folder = File.expand_path @config.local(:folder)
-      local_temp = File.expand_path @config.local(:temp)
+      local_folder = File.expand_path local[:folder]
+      local_temp   = File.expand_path local[:temp]
 
-      build_command = build_command.gsub('%f', build[:folder]).
-          gsub('%t', @config.build(:target)).
-          gsub('%p', @package.to_s).
+      build_command = build[:command].gsub('%f', build[:folder]).
+          gsub('%t', build[:target]).
+          gsub('%p', pkg.to_s).
           gsub('%T', type.to_s)
 
       upload_sources("#{local_folder}/", "#{build[:user]}@#{build[:host]}:#{build[:folder]}")
@@ -128,7 +128,7 @@ module Devinstall
 
     def run_tests
       # check if we have the test section in the configuration file
-      unless @config.tests
+      unless @config.respond_to? :tests
         puts 'No test section in the config file.'
         puts 'Skipping tests'
         return

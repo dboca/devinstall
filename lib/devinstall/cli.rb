@@ -32,15 +32,15 @@ module Devinstall
       $verbose ||= opt['verbose']
       $dry ||= opt['dry-run']
       # get config file
-      config = Devinstall::Settings.instance # is a singleton so we don't use new here
       cfgfile = get_config('./devinstall.yml', '~/.devinstall.yml', opt['config'])
       exit! 'You must specify the config file' if cfgfile.empty?
+      config = Settings.instance # is a singleton so we don't use new here
       config.load! cfgfile # load cfgfile
-      config.env = opt['env'] || config.env
-      config.type = opt['type'] || config.type
+      @env = opt['env']   || config.defaults(:env)
+      @type = opt['type'] || config.defaults(:type)
       @packages = package || []
       @packages = config.defaults(:package) if @packages.empty?
-      exit! 'You must ask for a package' if @packages.empty?
+      exit! 'You should ask for a package' if @packages.empty?
       config.validate
     rescue KeyNotDefinedError => e
       exit! e.message
@@ -48,14 +48,14 @@ module Devinstall
 
     def build
       @packages.each do |package|
-        pk=Devinstall::Pkg.new(package)
+        pk=Devinstall::Pkg.new(package,@type, @env)
         pk.build
       end
     end
 
     def install
       @packages.each do |package|
-        pk=Devinstall::Pkg.new(package)
+        pk=Devinstall::Pkg.new(package, @type, @env)
         pk.build
         pk.install
       end
@@ -63,7 +63,7 @@ module Devinstall
 
     def upload
       @packages.each do |package|
-        pk=Devinstall::Pkg.new(package)
+        pk=Devinstall::Pkg.new(package,@type, @env)
         pk.build
         pk.run_tests
         pk.upload
@@ -72,7 +72,7 @@ module Devinstall
 
     def test
       @packages.each do |package|
-        pk=Devinstall::Pkg.new(package)
+        pk=Devinstall::Pkg.new(package, @type, @env)
         pk.run_tests
       end
     end
