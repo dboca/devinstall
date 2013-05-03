@@ -8,11 +8,12 @@ class Hash
 end
 
 
-
 module Devinstall
 
-class KeyNotDefinedError < RuntimeError;end
-class UnknownKeyError < RuntimeError;end
+  class KeyNotDefinedError < RuntimeError;
+  end
+  class UnknownKeyError < RuntimeError;
+  end
 
   class Settings
     include Singleton
@@ -22,7 +23,7 @@ class UnknownKeyError < RuntimeError;end
     MDEFS={
         local: [:folder, :temp],
         build: [:user, :host, :folder, :target, :arch, :command, :provider],
-        install: [:user, :host, :folder, :type, :arch, :provider],
+        install: [:user, :host, :folder, :type, :arch, :provider, :command],
         tests: [:machine, :folder, :user, :command, :provider],
         repos: [:user, :host, :folder, :type, :arch]
     }
@@ -30,9 +31,8 @@ class UnknownKeyError < RuntimeError;end
     class Action
       include Enumerable
 
-      def initialize(set, sect, pkg, type, env)
-        @set=set
-        @sect=sect
+      def initialize(m, pkg, type, env)
+        @method=m
         @pkg=pkg
         @type=type
         @env=env
@@ -40,27 +40,26 @@ class UnknownKeyError < RuntimeError;end
 
       def valid?
         config = Settings.instance
-        return false unless Settings::MDEFS.has_key? @sect
-        Settings::MDEFS[@sect].inject (true) do |res, k|
-          res and config.respond_to? @sect and config.send(@sect, k, pkg: @pkg, type: @type, env: @env)
+        return false unless Settings::MDEFS.has_key? @method
+        Settings::MDEFS[@method].inject (true) do |res, k|
+          res and config.respond_to? @method and config.send(@method, k, pkg: @pkg, type: @type, env: @env)
         end
       rescue KeyNotDefinedError => e
-        puts e.message
-        puts e.backtrace if $verbose
+        puts e.message if $verbose
         return false
       end
 
       def [](key)
-        Settings.instance.send(@sect, key, pkg: @pkg, type: @type, env: @env)
+        Settings.instance.send(@method, key, pkg: @pkg, type: @type, env: @env)
       end
 
       def each
         config=Settings.instance
-        Settings::MDEFS[@sect].each do |key|
-          yield(key, config.send(@sect, key, pkg: @pkg, type: @type, env: @env)) if block_given?
+        Settings::MDEFS[@method].each do |key|
+          yield(key, config.send(@method, key, pkg: @pkg, type: @type, env: @env)) if block_given?
         end
       end
-    end  ## Class Action
+    end ## Class Action
 
     def load! (filename)
       if File.exist?(File.expand_path(filename))
@@ -93,16 +92,16 @@ class UnknownKeyError < RuntimeError;end
       raise UnknownKeyError, "Undefined section '#{m}'" unless MDEFS.has_key? m
       key=(args.shift or {})
       if Hash === key
-        pkg = key[:pkg] or raise 'package must be defined'
+        (pkg = key[:pkg]) or raise 'package must be defined'
         type = (key[:type] or defaults(:type))
         env = (key[:env] or defaults(:env))
-        return Action.new(SETTINGS, m, pkg, type, env)
+        return Action.new(m, pkg, type, env)
       end
       rest=(args.shift or {})
       (pkg = rest[:pkg]) or raise 'package must be defined'
       type = (rest[:type] or defaults(:type))
       env = (rest[:env] or defaults(:env))
-      pkg=pkg.to_sym
+      pkg=pkg.to_sym rescue pkg
       raise UnknownKeyError, "Unknown key #{key}" unless MDEFS[m].include? key
       global_or_local(m, key, pkg, type, env) or raise KeyNotDefinedError, "Undefined key '#{m}:#{key}' or alternate for ['#{pkg}' '#{type}' '#{env}']"
     end

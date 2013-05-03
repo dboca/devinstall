@@ -1,4 +1,4 @@
-require 'devinstall/pkg'
+require 'devinstall/package'
 require 'getopt/long'
 require 'devinstall/settings'
 require 'commander/import'
@@ -37,7 +37,7 @@ module Cli
       env = options.env ? options.env.to_sym : config.defaults(:env)
 
       args.each do |p|
-        pk=Devinstall::Pkg.new(p, type, env)
+        pk=Devinstall::Package.new(p, type, env)
         pk.build
       end
     end
@@ -51,7 +51,7 @@ module Cli
       env = options.env ? options.env.to_sym : config.defaults(:env)
 
       args.each do |p|
-        pk=Devinstall::Pkg.new(p, type, env)
+        pk=Devinstall::Package.new(p, type, env)
         pk.build
         pk.install
       end
@@ -66,7 +66,7 @@ module Cli
       env = options.env ? options.env.to_sym : config.defaults(:env)
 
       args.each do |p|
-        pk=Devinstall::Pkg.new(p, type, env)
+        pk=Devinstall::Package.new(p, type, env)
         pk.run_tests
       end
     end
@@ -80,7 +80,7 @@ module Cli
       env = options.env ? options.env.to_sym : config.defaults(:env)
 
       args.each do |p|
-        pk=Devinstall::Pkg.new(p, type, env)
+        pk=Devinstall::Package.new(p, type, env)
         pk.build
         pk.run_tests
         pk.upload
