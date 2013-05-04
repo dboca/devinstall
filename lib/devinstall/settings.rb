@@ -21,21 +21,18 @@ module Devinstall
     FILES = []
     SETTINGS = {}
     MDEFS={
-        local: [:folder, :temp],
-        build: [:user, :host, :folder, :target, :arch, :command, :provider],
-        install: [:user, :host, :folder, :type, :arch, :provider, :command],
-        tests: [:machine, :folder, :user, :command, :provider],
-        repos: [:user, :host, :folder, :type, :arch]
+        local:   [:folder, :temp],
+        build:   [:user, :host, :folder, :command, :provider, :target, :arch],
+        install: [:user, :host, :folder, :command, :provider, :type, :arch],
+        tests:   [:user, :host, :folder, :command, :provider],
+        repos:   [:user, :host, :folder, :provider, :type, :arch]
     }
 
     class Action
       include Enumerable
 
       def initialize(m, pkg, type, env)
-        @method=m
-        @pkg=pkg
-        @type=type
-        @env=env
+        @method, @pkg, @type, @env = m, pkg, type, env
       end
 
       def valid?
@@ -90,18 +87,13 @@ module Devinstall
 
     def method_missing (m, *args)
       raise UnknownKeyError, "Undefined section '#{m}'" unless MDEFS.has_key? m
-      key=(args.shift or {})
-      if Hash === key
-        (pkg = key[:pkg]) or raise 'package must be defined'
-        type = (key[:type] or defaults(:type))
-        env = (key[:env] or defaults(:env))
-        return Action.new(m, pkg, type, env)
-      end
-      rest=(args.shift or {})
+      key = (args.shift or {})
+      (Hash === key) ? rest = key : rest = (args.shift or {})
       (pkg = rest[:pkg]) or raise 'package must be defined'
-      type = (rest[:type] or defaults(:type))
-      env = (rest[:env] or defaults(:env))
-      pkg=pkg.to_sym rescue pkg
+      pkg = pkg.to_sym rescue pkg
+      type = rest[:type] || defaults(:type)
+      env = rest[:env] || defaults(:env)
+      return Action.new(m, pkg, type, env) if Hash === key
       raise UnknownKeyError, "Unknown key #{key}" unless MDEFS[m].include? key
       global_or_local(m, key, pkg, type, env) or raise KeyNotDefinedError, "Undefined key '#{m}:#{key}' or alternate for ['#{pkg}' '#{type}' '#{env}']"
     end
