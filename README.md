@@ -1,4 +1,8 @@
-﻿# Devinstall
+﻿# Devinstall  [![Gem Version][GV img]][Gem Version]
+
+[Gem Version]: https://rubygems.org/gems/devinstall
+
+[GV img]: https://badge.fury.io/rb/devinstall.png
 
 This is a poor man automatic builder / installer / deployer for packages.
 
