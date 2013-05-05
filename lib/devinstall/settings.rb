@@ -10,40 +10,34 @@ end
 
 module Devinstall
 
-  class KeyNotDefinedError < RuntimeError;
+  class KeyNotDefinedError < RuntimeError
   end
-  class UnknownKeyError < RuntimeError;
+  class UnknownKeyError < RuntimeError
   end
 
   class Settings
     include Singleton
 
-    FILES = []
-    SETTINGS = {}
-    MDEFS={
-        local:   [:folder, :temp],
-        build:   [:user, :host, :folder, :command, :provider, :target, :arch],
-        install: [:user, :host, :folder, :command, :provider, :type, :arch],
-        tests:   [:user, :host, :folder, :command, :provider],
-        repos:   [:user, :host, :folder, :provider, :type, :arch]
+    FILES     = []
+    SETTINGS  = {}
+    MDEFS     = {
+        local:    [:folder, :temp],
+        build:    [:folder, :command, :provider, :type, :arch, :target],
+        install:  [:folder, :command, :provider, :type, :arch],
+        tests:    [:folder, :command, :provider],
+        repos:    [:folder, :provider, :type, :arch],
+        defaults: [:type, :env]
     }
-
+    PROVIDERS = {}
     class Action
       include Enumerable
 
       def initialize(m, pkg, type, env)
-        @method, @pkg, @type, @env = m, pkg, type, env
+        @method, @pkg, @type, @env = (m.to_sym rescue m), (pkg.to_sym rescue pkg), (type.to_sym rescue type), (env.to_sym rescue env)
       end
 
-      def valid?
-        config = Settings.instance
-        return false unless Settings::MDEFS.has_key? @method
-        Settings::MDEFS[@method].inject (true) do |res, k|
-          res and config.respond_to? @method and config.send(@method, k, pkg: @pkg, type: @type, env: @env)
-        end
-      rescue KeyNotDefinedError => e
-        puts e.message if $verbose
-        return false
+      def has_key?(key)
+        Settings.instance.send(@method, key, pkg: @pkg, type: @type, env: @env) rescue false
       end
 
       def [](key)
@@ -62,7 +56,7 @@ module Devinstall
       if File.exist?(File.expand_path(filename))
         unless FILES.include? filename
           FILES << filename
-          data = YAML::load_file(filename).deep_symbolize
+          data   = YAML::load_file(filename).deep_symbolize
           merger = proc do |_, v1, v2|
             Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2
           end
@@ -71,35 +65,33 @@ module Devinstall
       end
     end
 
-    def defaults(key=nil)
-      return SETTINGS.has_key? :defaults if key.nil?
-      raise UnknownKeyError, "Unknowwn key: '#{key}'" unless [:package, :type, :env, :providers].include? key
-      return nil unless key_chain(:defaults, key)
-      SETTINGS[:defaults][key].to_sym or raise KeyNotDefinedError, "Undefined key :default:#{key.to_s}"
-    end
-
-    def base(key=nil)
-      return SETTINGS.has_key? :base if key.nil?
-      raise UnknownKeyError, "Unknown key: '#{key}'" unless [:rsync, :ssh, :sudo, :scp].include? key
-      return nil unless key_chain(:base, key)
-      SETTINGS[:base][key] or raise KeyNotDefinedError, "Undefined key :base:#{key.to_s}"
-    end
-
-    def method_missing (m, *args)
-      raise UnknownKeyError, "Undefined section '#{m}'" unless MDEFS.has_key? m
-      key = (args.shift or {})
-      (Hash === key) ? rest = key : rest = (args.shift or {})
-      (pkg = rest[:pkg]) or raise 'package must be defined'
-      pkg = pkg.to_sym rescue pkg
+    def method_missing (method, *args)
+      raise UnknownKeyError, "Undefined section '#{method}'" unless method_defined? method
+      key  = (args.shift or {})
+      rest = (Hash === key) ? key : (args.shift or {})
+      pkg = rest[:pkg]
+      if pkg.nil?
+       raise "Unknown key #{key}" unless key_defined? method,key
+       return SETTINGS[method][key] rescue raise "#{method}: Package must be defined"
+      end
       type = rest[:type] || defaults(:type)
-      env = rest[:env] || defaults(:env)
-      return Action.new(m, pkg, type, env) if Hash === key
-      raise UnknownKeyError, "Unknown key #{key}" unless MDEFS[m].include? key
-      global_or_local(m, key, pkg, type, env) or raise KeyNotDefinedError, "Undefined key '#{m}:#{key}' or alternate for ['#{pkg}' '#{type}' '#{env}']"
+      env  = rest[:env] || defaults(:env)
+      return Action.new(method, pkg, type, env) if Hash === key
+      raise UnknownKeyError, "Unknown key #{key}" unless key_defined? method,key
+      global_or_local(method, key, pkg, type, env) or
+          raise KeyNotDefinedError, "Undefined key '#{method}:#{key}' or alternate for ['#{pkg}' '#{type}' '#{env}']"
     end
 
     def respond_to_missing?(method, _)
-      MDEFS.has_key? method and SETTINGS.has_key? method
+      method_defined? method
+    end
+
+    def register_provider(provider, methods)
+      PROVIDERS[provider]=methods
+    end
+
+    def unregister_provider(provider)
+      PROVIDERS.delete(provider)
     end
 
     private
@@ -108,8 +100,8 @@ module Devinstall
       res=SETTINGS
       keys.each do |key|
         next if key.nil?
-        return nil unless res.has_key? key
-        res=res[key]
+        return nil unless res.has_key? key.to_sym
+        res=res[key.to_sym]
       end
       res
     end
@@ -119,6 +111,17 @@ module Devinstall
           key_chain(:packages, pkg, type, section, key) ||
           key_chain(section, env, key) ||
           key_chain(section, key)
+    end
+
+    def key_defined?(method, key)
+      (MDEFS[method].include? key rescue false) or
+          PROVIDERS.inject(false){|res,(_,v)| res or v[method].include? key}
+    end
+
+    def method_defined?(method)
+      (MDEFS.has_key?(method) or
+          PROVIDERS.inject(false){|res,(k,_)| res or PROVIDERS[k].has_key? method}) and
+          SETTINGS.has_key? method
     end
 
   end

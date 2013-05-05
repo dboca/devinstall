@@ -90,5 +90,3 @@ module Cli
 
 end
 
-__END__
-

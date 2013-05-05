@@ -51,8 +51,8 @@ module Devinstall
       info = get_info(pkg, type, env)
       info[:to_install].each do |target| # upload each file to all targets
         installer.put_file(info[:files][target])
+        installer.do_action(info[:files][target])
       end
-      installer.do_action
     end
 
     def run_tests(pkg=@package, type=@type, env=@env)

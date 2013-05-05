@@ -35,12 +35,13 @@ build:
 # arch is the architecture for the generated package (like amd64 or i686)
 # provider can be ssh or local (in the future vagrant and openstack)
 # note: the ssh in provider have nothing to do with ssh command in base
-  provider: ssh
+  provider: local
   user: dboca
   host: vm-dboca.dev.local
   folder: rs
   target: rs
   arch: all
+  type: deb
 install:
 # host - dev/prod deploy and install host
 # user - for scp / ssh / rsync  (defaults to base[user])
@@ -71,9 +72,10 @@ packages:
 #  %t build[target]
 #  %p package (current package)
 #  %T type (deb, rpm, tar.gz ,...)
+#  %a only make sense for install and is the installed file
     deb:
       build:
         command: "cd %f/%p && dpkg-buildpackage"
       install:
-        command: "dpkg -i"
+        command: "dpkg -i %a"
 
