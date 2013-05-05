@@ -117,7 +117,8 @@ In order:
   - and the folder where the package builder will put the builded packages
 
   - env define an environment (lyke `prod` or `QA`) for which the package will be built / installed
-  Unlike the other parameters env is optional 
+
+Unlike the other parameters env is optional 
   
     install:
       folder:
@@ -126,21 +127,19 @@ In order:
       type:
       arch:
       env:		
-    
     repos:
       folder:
       provider:
       type:
       arch:
       env:
-    
     tests:
       folder:
       command:
       provider
       env:
               
- The parameters have the same meaning as for `build:`
+The parameters have the same meaning as for `build:`
  `repos` reffers to the package repository
  `tests` is optional (DON'T do this) and no tests will be performend if it's missing
 
@@ -154,7 +153,9 @@ The default `type` and `env` if you don't use command-line switches
 The order in which the parameters will be searched is:
 
   - local
-  
+
+Like:
+
     packages:
       <package_name>:
         <type>:
@@ -164,6 +165,8 @@ The order in which the parameters will be searched is:
             
               
   - or global:
+
+Like
 
       <section>:
         <env>:
