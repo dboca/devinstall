@@ -71,7 +71,7 @@ module Devinstall
       rest = (Hash === key) ? key : (args.shift or {})
       pkg = rest[:pkg]
       if pkg.nil?
-       raise "Unknown key #{key}" unless key_defined? method,key
+       raise UnknownKeyError, "Unknown key #{key}" unless key_defined? method,key
        return SETTINGS[method][key] rescue raise "#{method}: Package must be defined"
       end
       type = rest[:type] || defaults(:type)
@@ -114,11 +114,14 @@ module Devinstall
     end
 
     def key_defined?(method, key)
+      method, key = (method.to_sym rescue method), (key.to_sym rescue key)
+      method_defined? method and
       (MDEFS[method].include? key rescue false) or
-          PROVIDERS.inject(false){|res,(_,v)| res or v[method].include? key}
+          PROVIDERS.inject(false){|res,(_,v)| res or (v[method].include? key rescue false)}
     end
 
     def method_defined?(method)
+      method = (method.to_sym rescue method)
       (MDEFS.has_key?(method) or
           PROVIDERS.inject(false){|res,(k,_)| res or PROVIDERS[k].has_key? method}) and
           SETTINGS.has_key? method

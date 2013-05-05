@@ -19,8 +19,6 @@ module Provider
       source = src[-1]=='/' ? src : "#{src}/"       # source folder(we add / because we are using rsync)
       dest   = "#{cfg[:user]}@#{cfg[:host]}:#{dst}" # cfg should provide user and host
       command("#{rsync} #{source} #{dest}")
-    rescue NoMethodError => e
-      raise "Program error :#{@action}\n #{e.message}"
     end
 
     def download_file(cfg, file, local)

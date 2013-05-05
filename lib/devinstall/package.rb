@@ -13,8 +13,8 @@ module Devinstall
   class Package
     include Utils
 
+    #noinspection RubyResolve
     def load_package_plugin(type)
-      #TODO if don't find the required file then search in a plugins folder
       require "devinstall/pkg/pkg_#{type.to_s}"
       self.singleton_class.send(:include, Kernel.const_get("Pkg").const_get("#{type.to_s.capitalize}"))
     end
@@ -31,6 +31,9 @@ module Devinstall
         puts "Uploading #{target.to_s}"
         uploader.put_file(info[:files][target].to_s)
       end
+    rescue KeyNotDefinedError => e
+      puts e.message
+      raise "Error uploading #{pkg}"
     end
 
     def build(pkg=@package, type=@type, env=@env)
@@ -43,6 +46,9 @@ module Devinstall
         puts "Receiving target #{target.to_s} for #{file.to_s}"
         builder.get_file(file)
       end
+    rescue KeyNotDefinedError => e
+      puts e.message
+      raise "Error uploading #{pkg}"
     end
 
     def install(pkg=@package, type=@type, env=@env)
@@ -53,6 +59,9 @@ module Devinstall
         installer.put_file(info[:files][target])
         installer.do_action(info[:files][target])
       end
+    rescue KeyNotDefinedError => e
+      puts e.message
+      raise "Error uploading #{pkg}"
     end
 
     def run_tests(pkg=@package, type=@type, env=@env)
@@ -68,6 +77,9 @@ module Devinstall
       tester = Provider.new(pkg, type, env, :tests)
       tester.copy_sources
       tester.do_action
+    rescue KeyNotDefinedError => e
+      puts e.message
+      raise "Error uploading #{pkg}"
     end
 
   end

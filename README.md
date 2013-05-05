@@ -79,6 +79,10 @@ or
 
 This will build and upload package "devinstall" to repository for dev-rh environment as defined in config.yml
 
+## The config file
+
+In order to
+
 ## Contributing
 
 1. Fork it
