@@ -4,7 +4,7 @@
 
 [GV img]: https://badge.fury.io/rb/devinstall.png
 
-This is a poor man automatic builder / installer / deployer for packages.
+This is a poor man automatic package builder / installer / deployer.
 
 The build happens on a remote machine (in the future on several remote machines by package type)
 via external tools rsync and ssh.
@@ -81,7 +81,97 @@ This will build and upload package "devinstall" to repository for dev-rh environ
 
 ## The config file
 
-In order to
+In order to set all the variables and to define commands to do when building or installing you need a configuration file.
+
+The said config file have simple YAML structure and should define the folowing parameters:
+
+    local:    
+      folder:
+      temp:
+
+The folder where the source/prepackaged files are on the local (developer) machine (`:folder`) and the
+temporary folder where the generated packages will be downloades
+
+    build:
+      folder: 
+      command:
+      provider:
+      type:
+      arch:
+      target:
+      env:
+
+In order:
+
+  - the folder where the sources should be copied (might be ignored by some provider_plugins)
+
+  - The command used to build the package (like `make package` or `dpkg-buildpackage`)
+
+  - The provider for the build machine (like the `local` machine or another machine
+  accessible only by SSH - `ssh` 
+
+  - the package type ( `deb`ian, `rpm`, ...)
+
+  - the architecture (might be ignored by some package_plugins)
+
+  - and the folder where the package builder will put the builded packages
+
+  - env define an environment (lyke `prod` or `QA`) for which the package will be built / installed
+  Unlike the other parameters env is optional 
+  
+    install:
+      folder:
+      command:
+      provider:
+      type:
+      arch:
+      env:		
+    
+    repos:
+      folder:
+      provider:
+      type:
+      arch:
+      env:
+    
+    tests:
+      folder:
+      command:
+      provider
+      env:
+              
+ The parameters have the same meaning as for `build:`
+ `repos` reffers to the package repository
+ `tests` is optional (DON'T do this) and no tests will be performend if it's missing
+
+    defaults:
+      type:
+      env:
+              
+The default `type` and `env` if you don't use command-line switches
+
+
+The order in which the parameters will be searched is:
+
+  - local
+  
+    packages:
+      <package_name>:
+        <type>:
+          <section>:  # like build: or install:
+            <env>:
+              <parameter>: <value>
+            
+              
+  - or global:
+
+      <section>:
+        <env>:
+          <parameter>: value
+
+The parameters speciffied per package have priority over the global ones
+
+In any case `env` is optional
 
 ## Contributing
 
