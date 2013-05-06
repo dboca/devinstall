@@ -33,7 +33,7 @@ All the actions can be done via this tool.
 
 The general command line syntax is:
 
-	$ pkg_tool <action> [<package>] [--env <environment>] [--type <type>] [--config <config_file>]
+	$ pkg_tool <action> [<package>] [--env=<environment>] [--type=<type>] [--config=<config_file>]
 
 Where:
 
@@ -59,11 +59,14 @@ Build the package, run the tests and upload thr file to the repo
 
 The command line switches are:
 
-  --config: the config file (defaults to ./devinstall.yml)
+    --config=<config_file>
+  the config file (defaults to ./devinstall.yml)
 
-  --env: the environment for the install or upload action
+    --env=<environment>
+  the environment for the install or upload action
 
-  --type: only for –action build and specifies the package type (deb, rpm, tar.gz, arc....)
+    --type=<type>
+  the package type (`deb`, `rpm`, `tar.gz`, `arc`....)
 
 The switches override the defaults in the config file
 
@@ -103,26 +106,26 @@ temporary folder where the generated packages will be downloades
 
 In order:
 
-  - the folder where the sources should be copied (might be ignored by some provider_plugins)
+  - The folder where the sources should be copied (might be ignored by some provider_plugins)
 
   - The command used to build the package (like `make package` or `dpkg-buildpackage`)
 
   - The provider for the build machine (like the `local` machine or another machine
   accessible only by SSH - `ssh` 
 
-  - the package type ( `deb`ian, `rpm`, ...)
+  - The package type ( `deb`ian, `rpm`, ...)
 
-  - the architecture (might be ignored by some package_plugins)
+  - The architecture (might be ignored by some package_plugins)
 
-  - and the folder where the package builder will put the builded packages
+  - And the folder where the package builder will put the builded packages
 
-  - env define an environment (lyke `prod` or `QA`) for which the package will be built / installed
+  - `env` define an environment (like `prod` or `QA`) for which the package will be built / installed
 
 Unlike the other parameters env is optional 
   
-    install:
+    install: #<-- This is a section
       folder:
-      command:
+      command:  #<-- This is a parameter
       provider:
       type:
       arch:
@@ -152,9 +155,9 @@ The default `type` and `env` if you don't use command-line switches
 
 The order in which the parameters will be searched is:
 
-  - local
+  - local:
 
-Like:
+Example:
 
     packages:
       <package_name>:
@@ -166,7 +169,7 @@ Like:
               
   - or global:
 
-Like
+Like:
 
       <section>:
         <env>:
