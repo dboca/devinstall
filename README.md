@@ -28,7 +28,7 @@ Or install it yourself as:
 
 ## Usage
 
-When you install the gem, the installer automaticaly install a program named pkg-tool. 
+When you install the gem, the installer automatically install a program named pkg-tool. 
 All the actions can be done via this tool.
 
 The general command line syntax is:
@@ -45,7 +45,7 @@ Builds the package on the `build/env/host` and copy the package file(s) back in 
 
     install
 
-Build (using `build` command) and install the builded package on the `install/env/host`
+Build (using `build` command) and install the built package on the `install/env/host`
 
     tests
 
@@ -86,14 +86,14 @@ This will build and upload package "devinstall" to repository for dev-rh environ
 
 In order to set all the variables and to define commands to do when building or installing you need a configuration file.
 
-The said config file have simple YAML structure and should define the folowing parameters:
+The said config file have simple YAML structure and should define the following parameters:
 
     local:    
       folder:
       temp:
 
 The folder where the source/prepackaged files are on the local (developer) machine (`:folder`) and the
-temporary folder where the generated packages will be downloades
+temporary folder where the generated packages will be downloaded
 
     build:
       folder: 
@@ -117,7 +117,7 @@ In order:
 
   - The architecture (might be ignored by some package_plugins)
 
-  - And the folder where the package builder will put the builded packages
+  - And the folder where the package builder will put the built packages
 
   - `env` define an environment (like `prod` or `QA`) for which the package will be built / installed
 
@@ -144,7 +144,7 @@ Unlike the other parameters env is optional
               
 The parameters have the same meaning as for `build:`
  `repos` reffers to the package repository
- `tests` is optional (DON'T do this) and no tests will be performend if it's missing
+ `tests` is optional (DON'T do this) and no tests will be performed if it's missing
 
     defaults:
       type:
@@ -175,7 +175,7 @@ Like:
         <env>:
           <parameter>: value
 
-The parameters speciffied per package have priority over the global ones
+The parameters specified per package have priority over the global ones
 
 In any case `env` is optional
 
