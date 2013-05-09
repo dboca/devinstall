@@ -1,0 +1,7 @@
+devinstall (1.2.1)  wheezy; urgency=low
+
+  * fix LBSM-161
+  * qa revision
+
+ -- Dragos Boca <dragos@localhost>  Thu, 18 Apr 2013 17:55:21 +0300
+
