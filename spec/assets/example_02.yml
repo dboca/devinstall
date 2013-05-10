@@ -6,7 +6,7 @@ ssh:
 defaults:
   package: devinstall
 #  env: dev
-#  type: deb
+  type: deb
 tests:
 # dev is the environment
 #  provider: ssh

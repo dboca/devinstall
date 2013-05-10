@@ -53,31 +53,31 @@ module Devinstall
     end ## Class Action
 
     def load! (filename)
-      if File.exist?(File.expand_path(filename))
-        unless FILES.include? filename
-          FILES << filename
-          data   = YAML::load_file(filename).deep_symbolize
-          merger = proc do |_, v1, v2|
-            Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2
-          end
-          SETTINGS.merge! data, &merger
+      if FILES.include? filename
+        true
+      else
+        FILES << filename
+        data   = YAML::load_file(filename).deep_symbolize
+        merger = proc do |_, v1, v2|
+          Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2
         end
-      end
+        SETTINGS.merge! data, &merger
+      end if File.exist?(File.expand_path(filename))
     end
 
     def method_missing (method, *args)
       raise UnknownKeyError, "Undefined section '#{method}'" unless method_defined? method
       key  = (args.shift or {})
       rest = (Hash === key) ? key : (args.shift or {})
-      pkg = rest[:pkg]
+      pkg  = rest[:pkg]
       if pkg.nil?
-       raise UnknownKeyError, "Unknown key #{key}" unless key_defined? method,key
-       return SETTINGS[method][key] rescue raise "#{method}: Package must be defined"
+        raise UnknownKeyError, "Unknown key #{key}" unless key_defined? method, key
+        return SETTINGS[method][key] rescue raise "#{method}: Package must be defined"
       end
       type = rest[:type] || defaults(:type)
       env  = rest[:env] || defaults(:env)
       return Action.new(method, pkg, type, env) if Hash === key
-      raise UnknownKeyError, "Unknown key #{key}" unless key_defined? method,key
+      raise UnknownKeyError, "Unknown key #{key}" unless key_defined? method, key
       global_or_local(method, key, pkg, type, env) or
           raise KeyNotDefinedError, "Undefined key '#{method}:#{key}' or alternate for ['#{pkg}' '#{type}' '#{env}']"
     end
@@ -116,14 +116,14 @@ module Devinstall
     def key_defined?(method, key)
       method, key = (method.to_sym rescue method), (key.to_sym rescue key)
       method_defined? method and
-      (MDEFS[method].include? key rescue false) or
-          PROVIDERS.inject(false){|res,(_,v)| res or (v[method].include? key rescue false)}
+          (MDEFS[method].include? key rescue false) or
+          PROVIDERS.inject(false) { |res, (_, v)| res or (v[method].include? key rescue false) }
     end
 
     def method_defined?(method)
       method = (method.to_sym rescue method)
       (MDEFS.has_key?(method) or
-          PROVIDERS.inject(false){|res,(k,_)| res or PROVIDERS[k].has_key? method}) and
+          PROVIDERS.inject(false) { |res, (k, _)| res or PROVIDERS[k].has_key? method }) and
           SETTINGS.has_key? method
     end
 
