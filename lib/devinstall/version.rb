@@ -1,3 +1,3 @@
 module Devinstall
-  VERSION = '1.2.1' # Working!
+  VERSION = '1.2.2' # Working!
 end
