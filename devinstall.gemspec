@@ -20,9 +20,9 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake'
-  spec.add_development_dependency 'getopt'
   spec.add_development_dependency 'rspec'
-  spec.add_development_dependency 'commander'
   spec.add_development_dependency 'simplecov'
   spec.add_development_dependency 'simplecov-gem-adapter'
+  spec.add_dependency 'getopt'
+  spec.add_dependency 'commander'
 end
