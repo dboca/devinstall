@@ -15,7 +15,7 @@ module Devinstall
 
     #noinspection RubyResolve
     def load_package_plugin(type)
-      require "devinstall/pkg/pkg_#{type.to_s}"
+      require "devinstall/package/pkg_#{type.to_s}"
       self.singleton_class.send(:include, Kernel.const_get("Pkg").const_get("#{type.to_s.capitalize}"))
     end
 
