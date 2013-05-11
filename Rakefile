@@ -1,7 +1,7 @@
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 
-task :default => :spec
+task :default => :coverage
 
 desc 'Run all examples'
 require 'coveralls'
