@@ -4,6 +4,8 @@ require 'rspec/core/rake_task'
 task :default => :spec
 
 desc 'Run all examples'
+require 'coveralls'
+Coveralls.wear!
 RSpec::Core::RakeTask.new(:spec) do |t|
   t.pattern = './spec/spec_helper.rb'
   t.rspec_opts = %w{--colour --format documentation}
