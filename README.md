@@ -1,4 +1,4 @@
-﻿# Devinstall  [![Gem Version][GV img]][Gem Version]  [![Build status][Build img]][Build img]
+﻿# Devinstall  [![Gem Version][GV img]][Gem Version]  [![Build status][Build img]][Build img]  [![CodeClimate status][CodeClimate img]][CodeClimate status]
 
 [Gem Version]: https://rubygems.org/gems/devinstall
 
@@ -8,6 +8,9 @@
 
 [Build img]: https://travis-ci.org/dboca/devinstall.png
 
+[CodeClimate Status]: https://codeclimate.com/github/dboca/devinstall
+
+[CodeClimate img]: https://codeclimate.com/github/dboca/devinstall.png
 
 This is a poor man automatic package builder / installer / deployer.
 
