@@ -39,6 +39,7 @@ describe 'Packages' do
       out = capture_output { pk.install(@package, @type, @env) }
       expect(out).to match /^Installing/
     end
-
   end
+		
 end
+
