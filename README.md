@@ -1,4 +1,4 @@
-﻿# Devinstall  [![Gem Version][GV img]][Gem Version]  [![Build status][Build img]][Build img]  [![CodeClimate status][CodeClimate img]][CodeClimate status]
+﻿# Devinstall  [![Gem Version][GV img]][Gem Version]  [![Build status][Build img]][Build status]  [![CodeClimate status][CodeClimate img]][CodeClimate status]
 
 [Gem Version]: https://rubygems.org/gems/devinstall
 
