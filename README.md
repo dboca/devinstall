@@ -6,7 +6,7 @@
 
 This is a poor man automatic package builder / installer / deployer.
 
-The build happens on a remote machine (in the future on several remote machines by package type)
+The build is done on a remote machine (in the future on several remote machines by package type)
 via external tools rsync and ssh.
 
 The packages are installed on the remote machines also via external rsync/scp and sshsudo
