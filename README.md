@@ -1,4 +1,4 @@
-﻿# Devinstall  [![Gem Version][GV img]][Gem Version]  [![Build status][Build img]][Build status]  [![CodeClimate status][CodeClimate img]][CodeClimate status]  [![Coverage Status][Coverage img]][Coverage Status]
+ # Devinstall  [![Gem Version][GV img]][Gem Version]  [![Build status][Build img]][Build status]  [![CodeClimate status][CodeClimate img]][CodeClimate status]  [![Coverage Status][Coverage img]][Coverage Status]
 
 [Gem Version]: https://rubygems.org/gems/devinstall
 
@@ -14,7 +14,7 @@
 
 [Coverage Status]: https://coveralls.io/r/dboca/devinstall?branch=master
 
-[Coverage img]: https://coveralls.io/r/dboca/devinstall?branch=master
+[Coverage img]: https://coveralls.io/repos/dboca/devinstall/badge.png?branch=master
 
 This is a poor man automatic package builder / installer / deployer.
 
