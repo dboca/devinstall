@@ -18,7 +18,7 @@ tests:
 local:
 # folder - source folder
 # temp - temporary folder
-  folder: ~/projects/devinstall/spec/assets
+  folder: ./spec/assets
   temp: ~/.tmp
 build:
 # host - build machine
