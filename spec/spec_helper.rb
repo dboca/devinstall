@@ -1,3 +1,6 @@
+require 'coveralls'
+Coveralls.wear!
+
 require 'devinstall/settings'
 
 def clean_config
