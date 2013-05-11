@@ -9,14 +9,12 @@ module Devinstall
   class UndeffError < RuntimeError;
   end
 
-
   class Package
     include Utils
 
-    #noinspection RubyResolve
     def load_package_plugin(type)
       require "devinstall/package/pkg_#{type.to_s}"
-      self.singleton_class.send(:include, Kernel.const_get("Pkg").const_get("#{type.to_s.capitalize}"))
+      self.singleton_class.send(:include, Kernel.const_get('Pkg').const_get("#{type.to_s.capitalize}"))
     end
 
     def initialize(pkg, type, env)
@@ -48,7 +46,7 @@ module Devinstall
       end
     rescue KeyNotDefinedError => e
       puts e.message
-      raise "Error uploading #{pkg}"
+      raise "Error building #{pkg}"
     end
 
     def install(pkg=@package, type=@type, env=@env)
@@ -61,7 +59,7 @@ module Devinstall
       end
     rescue KeyNotDefinedError => e
       puts e.message
-      raise "Error uploading #{pkg}"
+      raise "Error installing #{pkg}"
     end
 
     def run_tests(pkg=@package, type=@type, env=@env)
@@ -79,7 +77,7 @@ module Devinstall
       tester.do_action
     rescue KeyNotDefinedError => e
       puts e.message
-      raise "Error uploading #{pkg}"
+      raise "Error testing #{pkg}"
     end
 
   end

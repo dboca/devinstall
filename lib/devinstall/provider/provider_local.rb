@@ -9,6 +9,10 @@ module Provider
       local: [:copy, :sudo],
     }
 
+    def provider_init;end
+    
+    def profider_final;end
+    
     def upload_sources(cfg, src, dst)
       config =Devinstall::Settings.instance
       copy_command=config.local[:copy]

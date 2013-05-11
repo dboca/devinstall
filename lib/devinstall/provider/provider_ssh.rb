@@ -13,6 +13,10 @@ module Provider
         ssh:     [:ssh, :scp, :rsync, :sudo]
     }
 
+    def provider_init;end
+    
+    def profider_final;end
+
     def upload_sources(cfg, src, dst)
       config =Devinstall::Settings.instance
       rsync  = config.ssh(:rsync)
