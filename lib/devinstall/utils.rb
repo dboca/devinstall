@@ -14,12 +14,12 @@ module Utils
   end
 
   def command(cmd)
-    puts cmd if $verbose
+    puts "\t#{cmd}" if $verbose
     ret=''
     unless $dry
       ret = `#{cmd}`
       if $?.exitstatus != 0 ## return failure
-        err=CommandError.new "ErrorRunning #{cmd}"
+        err=CommandError.new "Error Running:\t #{cmd}"
         err.command_output = ret
         err.return_code = $?.exitstatus
         raise err

@@ -1,0 +1,74 @@
+ssh:
+  rsync: /usr/bin/rsync
+  scp: /usr/bin/scp
+  sudo: sshsudo
+  ssh: /usr/bin/ssh
+defaults:
+  package: devinstall
+#  env: dev
+  type: deb
+tests:
+# dev is the environment
+#  provider: ssh
+  dev:
+    host: dboca.dev.local
+    folder: rs
+    target: rs ## this is a new addition
+    user: dboca
+#  command: "cd %f && make devtest"
+local:
+# folder - source folder
+# temp - temporary folder
+  folder: .//spec/assets
+  temp: ~/.tmp
+build:
+# host - build machine
+# folder - rsync to?
+# target - the folder where packages will be generated (defaults to folder)
+# user - for ssh / rsync
+# arch is the architecture for the generated package (like amd64 or i686)
+# provider can be ssh or local (in the future vagrant and openstack)
+# note: the ssh in provider have nothing to do with ssh command in base
+  provider: local
+  user: dboca
+  host: vm-dboca.dev.local
+  folder: rs
+  target: rs
+  arch: all
+  type: deb
+install:
+# host - dev/prod deploy and install host
+# user - for scp / ssh / rsync  (defaults to base[user])
+# environment - live/qa/dev/...
+  provider: ssh  ## Not implemented but compulsory for build, install, repos, tests
+  user: dboca
+  host:
+    - server1.lan
+    - server2.lan
+  folder: /home/dboca ## folder for scp/dpkg -i
+  type: deb
+  arch: all
+repos:
+# for repository deployment
+# in a repository should be all packages for all architectures so we don't have an 'arch:' field
+  provider: ssh
+  user: dboca
+  host: dboca.repo.lan
+  folder: /srv/repo/incoming
+  type: deb
+packages:
+  devinstall:
+# might contain all the sections above (local, build, install, repos, tests)
+# type:build:command and  type:install:command are mandatory
+# in build_command the folowing expansions are made:
+#  %f build[folder]
+#  %t build[target]
+#  %p package (current package)
+#  %T type (deb, rpm, tar.gz ,...)
+#  %a only make sense for install and is the installed file
+    deb:
+      build:
+        command: "cd %f/%p && dpkg-buildpackage"
+      install:
+        command: "dpkg -i %a"
+

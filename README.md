@@ -1,12 +1,17 @@
-﻿# Devinstall  [![Gem Version][GV img]][Gem Version]
+﻿# Devinstall  [![Gem Version][GV img]][Gem Version]  [![Build status][Build img]][Build img]
 
 [Gem Version]: https://rubygems.org/gems/devinstall
 
 [GV img]: https://badge.fury.io/rb/devinstall.png
 
+[Build status]: https://travis-ci.org/dboca/devinstall
+
+[Build img]: https://travis-ci.org/dboca/devinstall.png
+
+
 This is a poor man automatic package builder / installer / deployer.
 
-The build happens on a remote machine (in the future on several remote machines by package type)
+The build is done on a remote machine (in the future on several remote machines by package type)
 via external tools rsync and ssh.
 
 The packages are installed on the remote machines also via external rsync/scp and sshsudo
