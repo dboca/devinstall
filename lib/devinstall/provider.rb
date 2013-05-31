@@ -15,7 +15,7 @@ module Devinstall
       provider_settings = load_provider_plugin(provider)
       Settings.instance.register_provider(provider.to_sym, provider_settings)
       provider_init
-      ObjectSpace.define_finalizer(self, Proc.new{ 
+      ObjectSpace.define_finalizer(self, Proc.new{
                                      provider_final
                                      Settings.instance.unregister_provider(provider)})
     end
@@ -57,3 +57,4 @@ module Devinstall
 
   end
 end
+
