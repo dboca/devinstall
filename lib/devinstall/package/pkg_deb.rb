@@ -13,8 +13,6 @@ module Pkg
         exit! "No 'debian/changelog' found in specified :local:folder (#{folder})"
       end
       package_version = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\((.*)\).*$/, '\1') }
-      package_distro = File.open(deb_changelog, 'r') { |f| f.gets.chomp.sub(/^.*\(.*\) (.*);.*$/, '\1') }
-      exit! "Incorrect distribution #{package_distro}" if package_distro == 'UNRELEASED'
       p_name = "#{pkg}_#{package_version}"
       arch = config.build(pkg: pkg, type: type, env: env)[:arch]
       {version: package_version,
