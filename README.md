@@ -4,17 +4,17 @@
 
 [GV img]: https://badge.fury.io/rb/devinstall.png
 
-[Build status]: https://travis-ci.org/dboca/devinstall
+[Build status]: https://travis-ci.org/dragosboca/devinstall
 
-[Build img]: https://travis-ci.org/dboca/devinstall.png
+[Build img]: https://travis-ci.org/dragosboca/devinstall.png
 
-[CodeClimate Status]: https://codeclimate.com/github/dboca/devinstall
+[CodeClimate Status]: https://codeclimate.com/github/dragosboca/devinstall
 
-[CodeClimate img]: https://codeclimate.com/github/dboca/devinstall.png
+[CodeClimate img]: https://codeclimate.com/github/dragosboca/devinstall.png
 
-[Coverage Status]: https://coveralls.io/r/dboca/devinstall?branch=master
+[Coverage Status]: https://coveralls.io/r/dragosboca/devinstall?branch=master
 
-[Coverage img]: https://coveralls.io/repos/dboca/devinstall/badge.png?branch=master
+[Coverage img]: https://coveralls.io/repos/dragosboca/devinstall/badge.png?branch=master
 
 This is a poor man automatic package builder / installer / deployer.
 
