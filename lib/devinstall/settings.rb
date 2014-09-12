@@ -53,16 +53,17 @@ module Devinstall
     end ## Class Action
 
     def load! (filename)
-      if FILES.include? filename
-        true
-      else
-        FILES << filename
-        data   = YAML::load_file(filename).deep_symbolize
-        merger = proc do |_, v1, v2|
-          Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2
-        end
-        SETTINGS.merge! data, &merger
-      end if File.exist?(File.expand_path(filename))
+       if FILES.include? filename
+          true
+       else
+          FILES << filename
+          data   = YAML::load_file(filename).deep_symbolize
+          merger = proc do |_, v1, v2|
+             Hash === v1 && Hash === v2 ? v1.merge(v2, &merger) : v2
+          end
+          SETTINGS.merge! data, &merger
+       end if File.exist?(File.expand_path(filename))
+      FILES.include? filename
     end
 
     def method_missing (method, *args)

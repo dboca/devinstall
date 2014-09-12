@@ -9,6 +9,6 @@ describe 'Provider' do
 
   it 'should load the correct (Provider::Ssh) plugin' do
     provider = Devinstall::Provider.new(@package, @type, @env, @action)
-    expect(provider.singleton_class.include? Provider::Ssh).to be_true
+    expect(provider.singleton_class.include? Provider::Ssh).to be true
   end
 end
