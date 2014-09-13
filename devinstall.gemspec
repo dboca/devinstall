@@ -7,10 +7,10 @@ Gem::Specification.new do |spec|
   spec.name          = 'devinstall'
   spec.version       = Devinstall::VERSION
   spec.authors       = ['Dragos Boca']
-  spec.email         = %w(dboca@mail.com)
+  spec.email         = %w(dragos.boca@zero-b.ro)
   spec.description   = %q{package builder and installer}
   spec.summary       = %q{Copy the source files to a build host, build the packages and install builded packages}
-  spec.homepage      = 'http://github.com/dboca/devinstall'
+  spec.homepage      = 'http://github.com/dragosboca/devinstall'
   spec.license       = 'MIT'
 
   spec.files         = `git ls-files`.split($/)
