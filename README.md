@@ -134,26 +134,27 @@ In order:
   - `env` define an environment (like `prod` or `QA`) for which the package will be built / installed
 
 Unlike the other parameters env is optional 
-  
-    install: #<-- This is a section
-      folder:
-      command:  #<-- This is a parameter
-      provider:
-      type:
-      arch:
-      env:		
-    repos:
-      folder:
-      provider:
-      type:
-      arch:
-      env:
-    tests:
-      folder:
-      command:
-      provider
-      env:
-              
+
+```yaml  
+install: #<-- This is a section
+  folder:
+  command:  #<-- This is a parameter
+  provider:
+  type:
+  arch:
+  env:		
+repos:
+  folder:
+  provider:
+  type:
+  arch:
+  env:
+tests:
+  folder:
+  command:
+  provider
+  env:
+```              
 The parameters have the same meaning as for `build:`
  `repos` reffers to the package repository
  `tests` is optional (DON'T do this) and no tests will be performed if it's missing
