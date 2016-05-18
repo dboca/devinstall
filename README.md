@@ -200,6 +200,3 @@ In any case `env` is optional
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
 
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/dboca/devinstall/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
